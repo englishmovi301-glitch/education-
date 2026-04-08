@@ -3,97 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Quiz Challenge</title>
+    <title>Quiz Challenge</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@600;800;900&display=swap');
+
         :root {
-            --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #e74c3c;
-            --bg: #f4f7f6; --white: #ffffff; --yellow: #f1c40f;
+            --primary: #1e293b; --accent: #0284c7; --success: #16a34a; --danger: #dc2626;
+            --bg: #f1f5f9; --white: #ffffff; --yellow: #ca8a04;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans Devanagari', sans-serif; }
         body { background: var(--bg); color: var(--primary); height: 100vh; display: flex; flex-direction: column; }
 
         header {
-            background: #fff; height: 60px; display: flex; align-items: center;
-            justify-content: space-between; padding: 0 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background: #fff; height: 65px; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky; top: 0; z-index: 100;
         }
         .timer-circle {
-            width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--accent);
-            display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--danger);
+            width: 45px; height: 45px; border-radius: 50%; border: 4px solid var(--accent);
+            display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--danger);
+            font-size: 18px;
         }
 
-        /* Start Screen */
+        /* Start & Result Screen */
         #start-screen, #result-screen {
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px; text-align: center;
         }
 
-        /* Quiz Container */
         #quiz-container { display: none; flex: 1; padding: 20px; flex-direction: column; }
 
         .question-box {
-            background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px; min-height: 100px; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: 600; text-align: center;
+            background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px; min-height: 120px; display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 800; text-align: center; line-height: 1.4; border: 2px solid #e2e8f0;
         }
 
-        .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
         .option-btn {
-            background: #fff; border: 2px solid #eee; padding: 15px; border-radius: 12px;
-            cursor: pointer; font-weight: 500; transition: 0.2s; text-align: left; font-size: 15px;
+            background: #fff; border: 2.5px solid #e2e8f0; padding: 18px; border-radius: 12px;
+            cursor: pointer; font-weight: 700; transition: 0.2s; text-align: left; font-size: 18px;
+            color: #1e293b;
         }
-        .option-btn:active { transform: scale(0.98); }
+ए        .option-btn:active { transform: scale(0.97); }
         .option-btn.correct { background: var(--success) !important; color: white; border-color: var(--success); }
         .option-btn.wrong { background: var(--danger) !important; color: white; border-color: var(--danger); }
 
         .btn-main {
-            background: var(--accent); color: white; border: none; padding: 15px 40px;
-            border-radius: 30px; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 20px;
+            background: var(--primary); color: white; border: none; padding: 18px 45px;
+            border-radius: 50px; font-size: 20px; font-weight: 900; cursor: pointer; margin-top: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
 
-        .stats-bar { display: flex; justify-content: space-around; padding: 15px; background: #fff; font-size: 13px; font-weight: bold; }
+        .stats-bar { 
+            display: flex; justify-content: space-around; padding: 15px; 
+            background: #fff; font-size: 16px; font-weight: 800; border-bottom: 2px solid #eee;
+        }
     </style>
 </head>
 <body>
 
-    <audio id="correct-snd" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"></audio>
-    <audio id="wrong-snd" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
-    <audio id="tick-snd" src="https://assets.mixkit.co/active_storage/sfx/2044/2044-preview.mp3"></audio>
-
     <header>
-        <a href="index.html" style="text-decoration:none; color:var(--primary); font-size:20px;">❮</a>
-        <div id="q-count">Question: 1/50</div>
+        <a href="index.html" style="text-decoration:none; color:var(--primary); font-size:30px; font-weight:900;">❮</a>
+        <div id="q-count" style="font-weight:900;">Question: --/--</div>
         <div class="timer-circle" id="timer">10</div>
     </header>
 
     <div class="stats-bar">
-        <span style="color:var(--success)">✅ सही: <span id="correct-count">0</span></span>
-        <span style="color:var(--danger)">❌ गलत: <span id="wrong-count">0</span></span>
-        <span style="color:var(--yellow)">💰 कमाई: Rs. <span id="earning">0.00</span></span>
+        <span style="color:var(--success)">✅ <span id="correct-count">0</span></span>
+        <span style="color:var(--danger)">❌ <span id="wrong-count">0</span></span>
+        <span style="color:var(--yellow)">💰 Rs. <span id="earning">0.00</span></span>
     </div>
 
     <div id="start-screen">
-        <h2 style="margin-bottom:10px;">Quiz Challenge</h2>
-        <p style="color:#7f8c8d; margin-bottom:20px;">प्रवेश शुल्क: Rs. 30.00<br>(हरेक सही उत्तरमा Rs. 1.5 पाइनेछ)</p>
-        <button class="btn-main" onclick="startQuiz()">Quiz सुरु गर्नुहोस्</button>
+        <h2 id="quiz-title" style="margin-bottom:15px; font-size:28px; font-weight:900;">Quiz लोड हुँदैछ...</h2>
+        <div style="background:#fff; padding:20px; border-radius:15px; border:2px dashed var(--accent);">
+            <p style="color:#475569; font-weight:700; font-size:18px;">प्रवेश शुल्क: Rs. 30.00</p>
+            <p style="color:var(--success); font-weight:800; font-size:16px;">(हरेक सही उत्तरमा Rs. 1.50 पाइनेछ)</p>
+        </div>
+        <button class="btn-main" onclick="startQuiz()">सुरु गर्नुहोस्</button>
     </div>
 
     <div id="quiz-container">
         <div class="question-box" id="question">प्रश्न लोड हुँदैछ...</div>
-        <div class="options-grid" id="options">
-            </div>
+        <div class="options-grid" id="options"></div>
     </div>
 
     <div id="result-screen" style="display:none;">
-        <h2>नतिजा</h2>
-        <h1 id="final-earn" style="color:var(--success); margin:20px 0;">Rs. 0.00</h1>
-        <p id="summary">तपाईँले ५० मध्ये २० मिलाउनुभयो।</p>
+        <h2 style="font-weight:900; font-size:30px;">नतिजा</h2>
+        <div style="margin:25px 0; padding:30px; background:#fff; border-radius:20px; width:100%; box-shadow:0 10px 20px rgba(0,0,0,0.1);">
+            <p style="font-weight:800; color:#64748b;">तपाईँको कुल कमाई:</p>
+            <h1 id="final-earn" style="color:var(--success); font-size:45px; font-weight:900; margin:10px 0;">Rs. 0.00</h1>
+            <p id="summary" style="font-weight:700; font-size:18px;"></p>
+        </div>
         <button class="btn-main" onclick="location.reload()">फेरि खेल्नुहोस्</button>
-        <a href="index.html" style="margin-top:15px; color:var(--accent); text-decoration:none; font-weight:bold;">मुख्य मेनुमा जानुहोस्</a>
+        <a href="index.html" style="margin-top:20px; color:var(--accent); text-decoration:none; font-weight:900; font-size:18px;">मुख्य मेनुमा जानुहोस्</a>
     </div>
 
     <script>
@@ -106,6 +115,12 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
+        // URL बाट टाइप लिने (loksewa, teacher, आदि)
+        const urlParams = new URLSearchParams(window.location.search);
+        const quizType = urlParams.get('type') || 'loksewa';
+        
+        document.getElementById('quiz-title').innerText = quizType.toUpperCase() + " Quiz Challenge";
+
         let questions = [];
         let currentIdx = 0;
         let correctAnswers = 0;
@@ -115,50 +130,53 @@
         let timerId;
         let userBalance = 0;
 
-        // १. ५० वटा नमुना प्रश्नहरू (तपाईँले Firebase मा पनि राख्न सक्नुहुन्छ)
-        function getDummyQuestions() {
-            let q = [];
-            for(let i=1; i<=50; i++) {
-                q.push({
-                    q: `नेपालको इतिहास सम्बन्धी प्रश्न नम्बर ${i}?`,
-                    options: ["विकल्प A", "विकल्प B", "विकल्प C", "विकल्प D"],
-                    ans: 0 // पहिलो विकल्प सही
-                });
+        // Firebase बाट प्रश्नहरू तान्ने
+        async function fetchQuestions() {
+            const snapshot = await database.ref('quizzes/' + quizType).once('value');
+            const data = snapshot.val();
+            if (data) {
+                questions = Object.values(data).sort(() => 0.5 - Math.random()).slice(0, 50);
+            } else {
+                // यदि डाटा छैन भने डमी प्रश्न राख्ने (परीक्षणको लागि)
+                for(let i=1; i<=50; i++) {
+                    questions.push({
+                        q: `${quizType} सम्बन्धी नमूना प्रश्न नम्बर ${i}?`,
+                        options: ["विकल्प A", "विकल्प B", "विकल्प C", "विकल्प D"],
+                        ans: 0
+                    });
+                }
             }
-            return q;
         }
 
-        // २. Quiz सुरु गर्ने (पैसा काट्ने भाग)
         async function startQuiz() {
+            // १. पहिले लगइन चेक गर्ने
             const user = firebase.auth().currentUser;
-            if(!user) return alert("कृपया लगइन गर्नुहोस्!");
+            if(!user) return alert("कृपया पहिले लगइन गर्नुहोस्!");
 
+            // २. ब्यालेन्स चेक गर्ने
             const userRef = database.ref('users/' + user.uid);
-            const snapshot = await userRef.get();
-            userBalance = snapshot.val().balance || 0;
+            const snapshot = await userRef.once('value');
+            userBalance = snapshot.val() ? snapshot.val().balance : 0;
 
-            if(userBalance < 30) {
-                alert("Quiz खेल्न कम्तिमा ३० रुपैयाँ ब्यालेन्स चाहिन्छ!");
-                return;
-            }
+            if(userBalance < 30) return alert("तपाईँको ब्यालेन्स कम्तिमा ३० रुपैयाँ हुनुपर्छ!");
 
-            // ३० रुपैयाँ काट्ने
+            // ३. ३० रुपैयाँ काट्ने र सुरु गर्ने
             userBalance -= 30;
             await userRef.update({ balance: userBalance });
 
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('quiz-container').style.display = 'flex';
             
-            questions = getDummyQuestions(); // यहाँ Firebase बाट तान्न पनि सकिन्छ
+            await fetchQuestions();
             loadQuestion();
         }
 
         function loadQuestion() {
-            if(currentIdx >= 50) return finishQuiz();
+            if(currentIdx >= questions.length) return finishQuiz();
 
             timeLeft = 10;
             document.getElementById('timer').innerText = timeLeft;
-            document.getElementById('q-count').innerText = `Question: ${currentIdx + 1}/50`;
+            document.getElementById('q-count').innerText = `Question: ${currentIdx + 1}/${questions.length}`;
             
             const qData = questions[currentIdx];
             document.getElementById('question').innerText = qData.q;
@@ -181,10 +199,9 @@
             timerId = setInterval(() => {
                 timeLeft--;
                 document.getElementById('timer').innerText = timeLeft;
-                if(timeLeft <= 3 && timeLeft > 0) document.getElementById('tick-snd').play();
                 if(timeLeft <= 0) {
                     clearInterval(timerId);
-                    checkAnswer(-1); // समय सकिएमा गलत मानिने
+                    checkAnswer(-1); 
                 }
             }, 1000);
         }
@@ -196,20 +213,13 @@
             allBtns.forEach(b => b.style.pointerEvents = 'none');
 
             if(selectedIdx === correctIdx) {
-                btn.classList.add('correct');
-                document.getElementById('correct-snd').play();
+                if(btn) btn.classList.add('correct');
                 correctAnswers++;
                 totalEarnings += 1.5;
             } else {
                 if(btn) btn.classList.add('wrong');
                 allBtns[correctIdx].classList.add('correct');
-                document.getElementById('wrong-snd').play();
                 wrongAnswers++;
-                
-                // ३ वटा गलत हुँदा १ पैसा (०.०१) काट्ने
-                if(wrongAnswers % 3 === 0) {
-                    totalEarnings -= 0.01;
-                }
             }
 
             document.getElementById('correct-count').innerText = correctAnswers;
@@ -219,23 +229,22 @@
             setTimeout(() => {
                 currentIdx++;
                 loadQuestion();
-            }, 1500);
+            }, 1200);
         }
 
         async function finishQuiz() {
             document.getElementById('quiz-container').style.display = 'none';
             document.getElementById('result-screen').style.display = 'flex';
             
-            const finalEarning = totalEarnings;
-            document.getElementById('final-earn').innerText = "Rs. " + finalEarning.toFixed(2);
-            document.getElementById('summary').innerText = `तपाईँले ५० मध्ये ${correctAnswers} वटा मिलाउनुभयो।`;
+            document.getElementById('final-earn').innerText = "Rs. " + totalEarnings.toFixed(2);
+            document.getElementById('summary').innerText = `${questions.length} मध्ये ${correctAnswers} वटा मिलाउनुभयो।`;
 
             // ब्यालेन्स अपडेट गर्ने
             const user = firebase.auth().currentUser;
-            const userRef = database.ref('users/' + user.uid);
-            await userRef.update({
-                balance: userBalance + finalEarning
-            });
+            if(user) {
+                const userRef = database.ref('users/' + user.uid);
+                await userRef.update({ balance: userBalance + totalEarnings });
+            }
         }
     </script>
 </body>
