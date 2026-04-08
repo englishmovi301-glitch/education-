@@ -96,39 +96,42 @@
             appId: "1:661874475829:web:dc74079c8c25ef56b0427c"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
 
+        // लगइन सुरु गर्ने फङ्सन
         function startLogin() {
-            const btn = document.getElementById('loginBtn');
-            const loader = document.getElementById('loader');
-            btn.style.display = 'none';
-            loader.style.display = 'block';
+            document.getElementById('loginBtn').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
 
             const provider = new firebase.auth.GoogleAuthProvider();
             firebase.auth().signInWithRedirect(provider);
         }
 
-        // लगइन भएर फिर्ता आएपछि डाटा सेभ गर्ने र profile.html मा जाने
+        // लगइन भएर फर्केपछि डाटा समात्ने र प्रोफाइलमा लैजाने
         firebase.auth().getRedirectResult().then((result) => {
-            if (result.user) {
+            if (result && result.user) {
                 const user = result.user;
+                // ब्राउजरमा डाटा सेभ गर्ने
                 localStorage.setItem("userName", user.displayName);
-                localStorage.setItem("userPhoto", user.photoURL);
                 localStorage.setItem("userEmail", user.email);
+                localStorage.setItem("userPhoto", user.photoURL);
 
-                // सिधै profile.html मा लैजाने
+                // सिधै profile.html मा पठाउने
                 window.location.href = "profile.html";
             }
         }).catch((error) => {
-            console.error("Error:", error);
-            alert("लगइनमा समस्या: " + error.message);
+            alert("लगइन त्रुटि: " + error.message);
             document.getElementById('loginBtn').style.display = 'flex';
             document.getElementById('loader').style.display = 'none';
         });
 
-        // पहिले नै लगइन छ भने पनि सिधै profile.html पठाउने
+        // यदि पहिले नै लगइन छ भने सिधै प्रोफाइलमा लैजाने
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
+                localStorage.setItem("userEmail", user.email);
                 window.location.href = "profile.html";
             }
         });
