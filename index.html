@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Compact Dashboard</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg-light: #f4f7f6;
+            --sidebar-bg: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            --grad1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --grad2: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+            --quiz-grad: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body { display: flex; background: var(--bg-light); height: 100vh; overflow: hidden; position: relative; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px; background: var(--sidebar-bg); color: white;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1001;
+        }
+        .sidebar.hide { margin-left: -260px; }
+        .sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header h2 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+
+        .menu-list { list-style: none; padding: 15px; }
+        .menu-list li {
+            padding: 12px 15px; margin-bottom: 8px; border-radius: 6px;
+            cursor: pointer; transition: 0.3s; background: rgba(255,255,255,0.05); font-size: 14px;
+        }
+        .menu-list li:hover, .menu-list li.active { background: var(--accent); transform: translateX(5px); }
+
+        /* Main Content */
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; padding-bottom: 75px; }
+
+        header {
+            background: #fff; height: 60px; display: flex; align-items: center;
+            padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .toggle-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; }
+        #dashboard-title { margin-left: 15px; color: var(--primary); font-size: 18px; font-weight: 600; }
+
+        /* Grid Layout */
+        .content-padding { padding: 20px; }
+        .grid-container {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
+            max-width: 700px; margin: 0 auto;
+        }
+
+        .box {
+            height: 100px; border-radius: 12px; text-align: center;
+            text-decoration: none; color: white; font-weight: 600; font-size: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: 0.3s;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px;
+        }
+        .box:active { transform: scale(0.95); }
+        .box:nth-child(4n+1) { background: var(--grad1); }
+        .box:nth-child(4n+2) { background: var(--grad2); }
+        .box:nth-child(4n+3) { background: var(--grad1); filter: hue-rotate(45deg); }
+        .box:nth-child(4n+4) { background: var(--grad2); filter: hue-rotate(-45deg); }
+
+        .quiz-box {
+            grid-column: span 2; background: var(--quiz-grad) !important;
+            height: 80px; font-size: 18px; margin-top: 5px;
+        }
+        .box-icon { font-size: 24px; margin-bottom: 5px; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 65px;
+            background: #fff; display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid #eee; z-index: 1000;
+        }
+        .nav-link { text-decoration: none; color: #7f8c8d; text-align: center; font-size: 12px; font-weight: 600; }
+        .nav-link.active { color: var(--accent); }
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+        @media (max-width: 600px) {
+            .grid-container { grid-template-columns: 1fr; }
+            .quiz-box { grid-column: span 1; }
+            .sidebar { position: fixed; height: 100%; left: 0; }
+            .sidebar.hide { left: -260px; margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar hide" id="sidebar">
+        <div class="sidebar-header"><h2>ALL EDUCATION</h2></div>
+        <ul class="menu-list">
+            <li class="active" onclick="loadCategory('loksewa', this)">लोकसेवा आयोग</li>
+            <li onclick="loadCategory('teacher', this)">शिक्षक सेवा आयोग</li>
+            <li onclick="loadCategory('banking', this)">बैंकिङ तयारी</li>
+            <li onclick="loadCategory('security', this)">सुरक्षा निकाय</li>
+        </ul>
+    </div>
+
+    <div class="main-container" id="main-content">
+        <header>
+            <div class="toggle-btn" onclick="event.stopPropagation(); toggleSidebar();">☰</div>
+            <h2 id="dashboard-title">लोकसेवा आयोग</h2>
+        </header>
+
+        <div class="content-padding">
+            <div id="grid-content" class="grid-container">
+                </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-link active"><span class="nav-icon">🏠</span>Home</a>
+            <a href="news.html" class="nav-link"><span class="nav-icon">📰</span>News</a>
+            <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span>Profile</a>
+        </nav>
+    </div>
+
+    <script>
+        // १. Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9_D2PC78t5LTpST4Sx23_74OtTyxoEE4",
+            authDomain: "education-58e7b.firebaseapp.com",
+            projectId: "education-58e7b",
+            storageBucket: "education-58e7b.firebasestorage.app",
+            messagingSenderId: "661874475829",
+            appId: "1:661874475829:web:dc74079c8c25ef56b0427c",
+            databaseURL: "https://education-58e7b-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // २. Backup Local Data (यदि Firebase कनेक्ट भएन भने यो चल्छ)
+        const categoriesData = {
+            loksewa: { 
+                title: "लोकसेवा आयोग", quiz: "लोकसेवा विशेष Quiz",
+                items: [
+                    { name: "खरिदार", icon: "✍️" }, { name: "नायब सुब्बा", icon: "📜" },
+                    { name: "शाखा अधिकृत", icon: "💼" }, { name: "वन रक्षक", icon: "🛡️" }
+                ]
+            },
+            teacher: { 
+                title: "शिक्षक सेवा आयोग", quiz: "TSC विशेष Quiz",
+                items: [
+                    { name: "प्राथमिक तह", icon: "📝" }, { name: "निम्न माध्यमिक", icon: "📖" },
+                    { name: "माध्यमिक तह", icon: "🏫" }
+                ]
+            },
+            banking: { 
+                title: "बैंकिङ तयारी", quiz: "बैंकिङ विशेष Quiz",
+                items: [
+                    { name: "नेपाल बैंक", icon: "💰" }, { name: "RBB बैंक", icon: "🏛️" },
+                    { name: "ADBL बैंक", icon: "🚜" }
+                ]
+            },
+            security: { 
+                title: "सुरक्षा निकाय", quiz: "सुरक्षा विशेष Quiz",
+                items: [
+                    { name: "नेपाली सेना", icon: "🎖️" }, { name: "नेपाल प्रहरी", icon: "👮" },
+                    { name: "सशस्त्र प्रहरी", icon: "🛡️" }
+                ]
+            }
+        };
+
+        // ३. मुख्य लोड फङ्सन
+        function loadCategory(key, el) {
+            if(el) {
+                document.querySelectorAll('.menu-list li').forEach(li => li.classList.remove('active'));
+                el.classList.add('active');
+            }
+
+            // पहिले लोकल डाटाबाट तुरुन्तै देखाउने
+            renderUI(categoriesData[key], key);
+
+            // त्यसपछि Firebase बाट नयाँ डाटा छ कि भनेर चेक गर्ने
+            database.ref('categories/' + key).on('value', (snapshot) => {
+                const fbData = snapshot.val();
+                if (fbData) {
+                    renderUI(fbData, key); // यदि Firebase मा डाटा छ भने त्यसले अपडेट गर्ने
+                }
+            });
+
+            if(window.innerWidth < 600) toggleSidebar();
+        }
+
+        // ४. UI मा बक्सहरू बनाउने फङ्सन
+        function renderUI(data, key) {
+            const grid = document.getElementById('grid-content');
+            document.getElementById('dashboard-title').innerText = data.title;
+            grid.innerHTML = '';
+
+            if(data.items) {
+                data.items.forEach((item) => {
+                    grid.innerHTML += `
+                        <a href="reading.html?cat=${key}&item=${item.name}" class="box">
+                            <span class="box-icon">${item.icon}</span>
+                            <span>${item.name}</span>
+                        </a>`;
+                });
+            }
+
+            grid.innerHTML += `
+                <a href="quiz.html?type=${key}" class="box quiz-box">
+                    <span>⚡ ${data.quiz}</span>
+                </a>`;
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('hide');
+        }
+
+        // बाहिर क्लिक गर्दा साइडबार बन्द गर्ने
+        document.getElementById('main-content').onclick = function() {
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar.classList.contains('hide') && window.innerWidth < 600) {
+                sidebar.classList.add('hide');
+            }
+        };
+
+        window.onload = () => { loadCategory('loksewa'); };
+    </script>
+</body>
+</html>

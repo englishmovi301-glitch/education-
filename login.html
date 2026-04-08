@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Daily Paisa</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <style>
+        :root {
+            --bg: #1a2634;
+            --card-bg: #243447;
+            --white: #ffffff;
+            --yellow: #f1c40f;
+            --text-muted: #bdc3c7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: var(--white); height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+
+        .login-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #333;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        #loader { display: none; margin-top: 20px; }
+        .spinner {
+            width: 30px; height: 30px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid var(--yellow);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div style="font-size: 60px; margin-bottom: 20px;">💰</div>
+        <h2 style="margin-bottom: 10px;">स्वागत छ!</h2>
+        <p style="color: var(--text-muted); margin-bottom: 40px;">अगाडि बढ्न गुगल लगइन गर्नुहोस्।</p>
+
+        <button class="google-btn" id="loginBtn" onclick="startLogin()">
+            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" width="24" height="24">
+            Google बाट लगइन गर्नुहोस्
+        </button>
+
+        <div id="loader">
+            <div class="spinner"></div>
+            <p style="font-size: 13px; margin-top: 10px;">प्रमाणित गर्दै...</p>
+        </div>
+    </div>
+
+    <script>
+        // तपाईँको Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9_D2PC78t5LTpST4Sx23_74OtTyxoEE4",
+            authDomain: "education-58e7b.firebaseapp.com",
+            projectId: "education-58e7b",
+            storageBucket: "education-58e7b.firebasestorage.app",
+            messagingSenderId: "661874475829",
+            appId: "1:661874475829:web:dc74079c8c25ef56b0427c"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        function startLogin() {
+            const btn = document.getElementById('loginBtn');
+            const loader = document.getElementById('loader');
+            
+            btn.style.display = 'none';
+            loader.style.display = 'block';
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+
+            // गुगल लगइन पप-अप खोल्ने
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    const user = result.user;
+                    
+                    // युजरको जानकारी ब्राउजरमा सेभ गर्ने ताकि प्रोफाइल पेजमा देखाउन सकियोस्
+                    localStorage.setItem("userName", user.displayName);
+                    localStorage.setItem("userPhoto", user.photoURL);
+                    localStorage.setItem("userEmail", user.email);
+
+                    window.location.href = "index.html"; // होम पेजमा लैजाने
+                })
+                .catch((error) => {
+                    alert("लगइनमा समस्या आयो: " + error.message);
+                    btn.style.display = 'flex';
+                    loader.style.display = 'none';
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile | Daily Paisa</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #2c3e50; --accent: #3498db; --esewa: #60bb46; --khalti: #5c2d91;
+            --bg: #f4f7f6; --card-bg: #ffffff; --white: #ffffff; --yellow: #f1c40f;
+            --text-dark: #2c3e50; --text-muted: #7f8c8d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg); color: var(--text-dark); padding-bottom: 80px; overflow-x: hidden; }
+
+        header {
+            background: #fff; height: 60px; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; }
+        .back-btn { text-decoration: none; font-size: 22px; color: var(--primary); margin-right: 15px; }
+        
+        .balance-chip {
+            background: #fff; padding: 6px 12px; border-radius: 20px; border: 1.5px solid var(--yellow);
+            display: flex; align-items: center; gap: 6px; font-weight: 700; color: #f39c12; font-size: 14px;
+        }
+
+        .profile-section { padding: 30px 20px; text-align: center; background: #fff; border-bottom: 1px solid #eee; }
+        
+        .profile-img-container { position: relative; display: inline-block; width: 100px; height: 100px; margin-bottom: 15px; }
+        .profile-img-border {
+            width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--yellow);
+            display: flex; align-items: center; justify-content: center; padding: 2px; overflow: hidden;
+        }
+        .profile-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #eee; }
+
+        .user-name { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: var(--primary); }
+
+        .action-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; }
+        .btn {
+            padding: 12px; border-radius: 10px; border: none;
+            font-weight: 700; cursor: pointer; color: white; transition: 0.2s;
+            font-size: 14px; flex: 1; max-width: 130px;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-deposit { background: var(--esewa); }
+        .btn-withdraw { background: var(--khalti); }
+
+        /* Menu List with Same Icons */
+        .menu-list { padding: 20px; max-width: 500px; margin: 0 auto; }
+        .menu-item {
+            background: #fff; padding: 15px; border-radius: 12px;
+            display: flex; align-items: center; margin-bottom: 10px;
+            text-decoration: none; color: var(--primary); font-weight: 600;
+            cursor: pointer; border: 1px solid #eee; font-size: 14px;
+        }
+        .menu-icon { font-size: 18px; margin-right: 12px; width: 25px; text-align: center; }
+
+        /* Custom Toast */
+        #toast {
+            visibility: hidden; min-width: 200px; background-color: #333;
+            color: #fff; text-align: center; border-radius: 10px;
+            padding: 16px; position: fixed; z-index: 3000; left: 50%;
+            bottom: 100px; transform: translateX(-50%);
+        }
+        #toast.show { visibility: visible; animation: fadein 0.5s; }
+
+        /* Modal Styles */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #fff; width: 90%; max-width: 360px; padding: 25px;
+            border-radius: 20px; text-align: center;
+        }
+        .method-choice { display: flex; gap: 10px; margin-bottom: 15px; }
+        .method-btn {
+            flex: 1; padding: 10px; border: 1.5px solid #ddd; border-radius: 10px;
+            cursor: pointer; font-weight: 700; font-size: 14px;
+        }
+        .method-btn.selected { border-color: var(--yellow); color: #f39c12; background: rgba(241, 196, 15, 0.05); }
+
+        .copy-box {
+            background: #f9f9f9; padding: 12px; border-radius: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; border: 1px dashed #ccc;
+        }
+        input {
+            width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; outline: none;
+        }
+        .submit-btn {
+            width: 100%; padding: 14px; border: none; border-radius: 10px;
+            background: var(--yellow); color: #000; font-weight: 800; cursor: pointer;
+        }
+
+        /* Bottom Nav - index.html जस्तै */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 65px;
+            background: #fff; display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid #eee; z-index: 1000;
+        }
+        .nav-link { text-decoration: none; color: #7f8c8d; text-align: center; font-size: 12px; font-weight: 600; }
+        .nav-link.active { color: var(--accent); }
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
+    </style>
+</head>
+<body>
+
+    <div id="toast">सन्देश यहाँ देखिनेछ</div>
+
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="back-btn">❮</a>
+            <h3 id="header-title">प्रोफाइल</h3>
+        </div>
+        <div class="balance-chip">
+            <span>💰</span><span id="top-balance">Rs. 0.00</span>
+        </div>
+    </header>
+
+    <div class="profile-section">
+        <div class="profile-img-container">
+            <div class="profile-img-border">
+                <img src="https://via.placeholder.com/150" id="display-photo" class="profile-img">
+            </div>
+        </div>
+        <div class="user-name" id="user-display-name">Loading...</div>
+        
+        <div class="action-btns">
+            <button class="btn btn-deposit" onclick="toggleModal('deposit', true)">Deposit</button>
+            <button class="btn btn-withdraw" onclick="toggleModal('withdraw', true)">Withdraw</button>
+        </div>
+    </div>
+
+    <div class="menu-list">
+        <div class="menu-item" onclick="toggleModal('editProfile', true)">
+            <span class="menu-icon">📝</span> प्रोफाइल सम्पादन
+        </div>
+        <div class="menu-item" onclick="showHistory()">
+            <span class="menu-icon">📜</span> कारोबारको इतिहास
+        </div>
+        <div class="menu-item" onclick="toggleModal('logout', true)" style="color:#e74c3c; border-color: #fab1a0; margin-top:15px;">
+            <span class="menu-icon">🔴</span> बाहिरिनुहोस्
+        </div>
+    </div>
+
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px;">Deposit</h3>
+            <div class="method-choice">
+                <div class="method-btn selected" id="method-esewa" onclick="selectMethod(this, 'eSewa')">eSewa</div>
+                <div class="method-btn" id="method-khalti" onclick="selectMethod(this, 'Khalti')">Khalti</div>
+            </div>
+            <div class="copy-box">
+                <span id="dep-num" style="font-weight:700; color:#e67e22;">9748253225</span>
+                <span style="color:var(--accent); font-size:12px; font-weight:bold; cursor:pointer;" onclick="copyNum()">COPY</span>
+            </div>
+            <input type="number" id="depAmt" placeholder="रकम (Min. 50)">
+            <input type="text" id="txnId" placeholder="Transaction ID">
+            <button class="submit-btn" onclick="processDeposit()">डन गर्नुहोस्</button>
+            <p onclick="toggleModal('deposit', false)" style="margin-top:15px; color:#95a5a6; font-size:13px; cursor:pointer;">रद्द गर्नुहोस्</p>
+        </div>
+    </div>
+
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <h3>Logout?</h3>
+            <p style="margin: 15px 0; color: #7f8c8d; font-size: 14px;">के तपाईँ बाहिरिन चाहनुहुन्छ?</p>
+            <button class="submit-btn" style="background:#e74c3c; color:white;" onclick="confirmLogout()">हो, बाहिरिने</button>
+            <button class="submit-btn" style="background:transparent; color:#95a5a6; margin-top:10px;" onclick="toggleModal('logout', false)">रद्द गर्नुहोस्</button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-link"><span class="nav-icon">🏠</span>Home</a>
+        <a href="news.html" class="nav-link"><span class="nav-icon">📰</span>News</a>
+        <a href="profile.html" class="nav-link active"><span class="nav-icon">👤</span>Profile</a>
+    </nav>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9_D2PC78t5LTpST4Sx23_74OtTyxoEE4",
+            authDomain: "education-58e7b.firebaseapp.com",
+            projectId: "education-58e7b",
+            storageBucket: "education-58e7b.firebasestorage.app",
+            messagingSenderId: "661874475829",
+            appId: "1:661874475829:web:dc74079c8c25ef56b0427c",
+            databaseURL: "https://education-58e7b-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let selectedPaymentMethod = 'eSewa';
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('user-display-name').innerText = user.displayName || "User Name";
+                document.getElementById('display-photo').src = user.photoURL || "https://via.placeholder.com/150";
+
+                const userRef = database.ref('users/' + user.uid);
+                userRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data && data.balance !== undefined) {
+                        document.getElementById('top-balance').innerText = "Rs. " + data.balance.toFixed(2);
+                    }
+                });
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        function showToast(msg) {
+            var x = document.getElementById("toast");
+            x.innerHTML = msg;
+            x.className = "show";
+            setTimeout(function(){ x.className = ""; }, 3000);
+        }
+
+        function toggleModal(type, show) { 
+            document.getElementById(type + 'Modal').style.display = show ? 'flex' : 'none'; 
+        }
+
+        function copyNum() {
+            const num = document.getElementById('dep-num').innerText;
+            navigator.clipboard.writeText(num);
+            showToast("नम्बर कपी गरियो");
+        }
+
+        function selectMethod(el, method) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function processDeposit() {
+            const amt = parseFloat(document.getElementById('depAmt').value);
+            const remark = document.getElementById('txnId').value;
+            const user = firebase.auth().currentUser;
+
+            if (isNaN(amt) || amt < 50) return showToast("Min. Rs. 50 आवश्यक छ");
+            if (!remark.trim()) return showToast("Transaction ID आवश्यक छ");
+
+            database.ref('depositRequests/').push({
+                uid: user.uid,
+                userName: user.displayName,
+                amount: amt,
+                method: selectedPaymentMethod,
+                remark: remark,
+                status: "pending",
+                timestamp: Date.now()
+            }).then(() => {
+                showToast("अनुरोध पठाइयो!");
+                toggleModal('deposit', false);
+                document.getElementById('depAmt').value = "";
+                document.getElementById('txnId').value = "";
+            });
+        }
+
+        function confirmLogout() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = "login.html";
+            });
+        }
+    </script>
+</body>
+</html>
