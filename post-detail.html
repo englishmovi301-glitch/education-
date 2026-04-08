@@ -3,140 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post Details</title>
+    <title>विवरण | Post Details</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
+        /* प्रष्ट र मोटो फन्ट */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@700;800;900&display=swap');
+
         :root {
-            --primary: #2c3e50;
-            --accent: #3498db;
-            --bg-light: #ffffff;
-            --text-color: #2d3436;
-            --meta-color: #636e72;
+            --primary: #1a1a1a;
+            --accent: #2980b9;
+            --bg-light: #f4f7f6;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        body { background: #f9f9f9; color: var(--text-color); line-height: 1.8; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans Devanagari', sans-serif; }
+        body { background: #f0f2f5; color: #000; line-height: 1.6; }
 
         header {
-            background: #fff; height: 60px; display: flex; align-items: center;
-            padding: 0 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background: #fff; height: 65px; display: flex; align-items: center;
+            padding: 0 15px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
             position: sticky; top: 0; z-index: 1000;
         }
 
-        .back-btn { text-decoration: none; color: var(--primary); font-size: 24px; margin-right: 15px; font-weight: bold; }
-        header h2 { font-size: 17px; font-weight: 700; color: var(--primary); }
+        .back-btn { text-decoration: none; color: #000; font-size: 28px; margin-right: 15px; font-weight: 900; }
+        header h2 { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
 
-        .container { max-width: 800px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; min-height: 100vh; }
 
-        .feature-image { width: 100%; max-height: 400px; overflow: hidden; background: #eee; }
-        .feature-image img { width: 100%; height: 100%; object-fit: cover; display: none; } /* सुरुमा लुकाउने */
+        .feature-image { width: 100%; display: none; background: #eee; }
+        .feature-image img { width: 100%; height: auto; display: block; }
 
-        .post-content { padding: 25px 20px; }
-        .post-title { font-size: 26px; line-height: 1.3; color: var(--primary); margin-bottom: 15px; font-weight: 800; }
+        .post-content { padding: 25px 15px; }
+        
+        .post-title { 
+            font-size: 28px; font-weight: 900; line-height: 1.2; 
+            margin-bottom: 15px; letter-spacing: -1px; color: #000;
+        }
 
         .post-meta {
-            font-size: 13px; color: var(--meta-color); margin-bottom: 25px;
-            display: flex; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px;
+            font-size: 14px; color: #444; margin-bottom: 25px;
+            display: flex; gap: 15px; border-bottom: 3px solid #000; padding-bottom: 10px;
+            font-weight: 700;
         }
 
-        .post-body { font-size: 18px; color: #333; text-align: justify; white-space: pre-wrap; } /* pre-wrap ले लाइन ब्रेक मिलाउँछ */
+        .post-body { 
+            font-size: 21px; color: #000; white-space: pre-wrap; 
+            line-height: 1.7; font-weight: 700; letter-spacing: -0.5px;
+        }
 
-        .loading-spinner { text-align: center; padding: 50px; color: var(--accent); font-weight: bold; }
-
-        .footer-nav { padding: 30px 20px; text-align: center; border-top: 1px solid #eee; margin-top: 40px; }
+        .loader { text-align: center; padding: 100px 20px; font-weight: 900; font-size: 20px; color: #888; }
+        .footer-nav { padding: 40px 20px; text-align: center; }
         .home-btn {
-            display: inline-block; background: var(--primary); color: white; padding: 12px 30px;
-            text-decoration: none; border-radius: 25px; font-weight: 600;
-        }
+            display: inline-block; background: #000; color: white; padding: 14px 35px;
+            text-decoration: none; border-radius: 8px; font-weight: 900; font-size: 18px;
+क        }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="news.html" class="back-btn">❮</a>
-        <h2 id="header-title">विवरण लोड हुँदैछ...</h2>
+        <a href="javascript:history.back()" class="back-btn">❮</a>
+        <h2 id="header-title">विवरण</h2>
     </header>
 
     <div class="container">
-        <div id="loader" class="loading-spinner">सामग्री लोड हुँदैछ, कृपया पर्खनुहोस्...</div>
+        <div id="loader" class="loader">लोड हुँदैछ...</div>
 
         <div id="post-data" style="display: none;">
-            <div class="feature-image">
-                <img id="main-img" src="" alt="Post Image">
+            <div id="image-container" class="feature-image">
+                <img id="main-img" src="">
             </div>
 
             <article class="post-content">
                 <h1 class="post-title" id="display-title"></h1>
-                
                 <div class="post-meta">
-                    <span id="display-date">📅 --</span>
-                    <span id="display-category">📁 --</span>
+                    <span id="display-date">📅 हालै</span>
+                    <span id="display-category">📁 सामान्य</span>
                 </div>
-
-                <div class="post-body" id="display-body"></div>
+                <div id="display-body" class="post-body"></div>
             </article>
-        </div>
 
-        <div class="footer-nav">
-            <a href="index.html" class="home-btn">मुख्य पेजमा जानुहोस्</a>
+            <div class="footer-nav">
+                <a href="index.html" class="home-btn">मुख्य पेजमा फर्कनुहोस्</a>
+            </div>
         </div>
     </div>
 
     <script>
-        // १. Firebase Configuration
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA9_D2PC78t5LTpST4Sx23_74OtTyxoEE4",
             authDomain: "education-58e7b.firebaseapp.com",
             projectId: "education-58e7b",
-            storageBucket: "education-58e7b.firebasestorage.app",
-            messagingSenderId: "661874475829",
-            appId: "1:661874475829:web:dc74079c8c25ef56b0427c",
             databaseURL: "https://education-58e7b-default-rtdb.firebaseio.com/"
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // २. URL बाट ID र TYPE (news वा vacancy) लिने
+        // URL बाट दुबै प्रकारका पारामिटर लिने (पुरानो: cat/sub, नयाँ: type/id)
         const urlParams = new URLSearchParams(window.location.search);
-        const postId = urlParams.get('id');
-        const postType = urlParams.get('type'); // news वा vacancy
+        const category = urlParams.get('cat') || urlParams.get('type');
+        const postId = urlParams.get('sub') || urlParams.get('id');
 
-        if (postId && postType) {
-            // डाटाबेसको सही ठेगाना मिलाउने (news/ID वा vacancies/ID)
-            const dbPath = postType === 'news' ? 'news/' : 'vacancies/';
+        if (category && postId) {
             
-            database.ref(dbPath + postId).once('value').then((snapshot) => {
-                const data = snapshot.val();
+            // १. पहिले सिधै 'news/id' वा 'vacancies/id' मा खोज्ने (नयाँ news.html को लागि)
+            database.ref(category + '/' + postId).once('value').then((snapshot) => {
+                let data = snapshot.val();
                 
-                if (data) {
-                    // डाटाहरू स्क्रिनमा देखाउने
-                    document.getElementById('display-title').innerText = data.title;
-                    document.getElementById('header-title').innerText = data.title.substring(0, 20) + "...";
-                    document.getElementById('display-body').innerText = data.description || data.body || "विवरण उपलब्ध छैन।";
-                    document.getElementById('display-date').innerText = "📅 " + (data.time || data.deadline || "नयाँ");
-                    document.getElementById('display-category').innerText = "📁 " + (data.category || "सामान्य");
-                    
-                    if (data.image) {
-                        const img = document.getElementById('main-img');
-                        img.src = data.image;
-                        img.style.display = "block";
-                    }
-
-                    // लोडर हटाउने र डाटा देखाउने
-                    document.getElementById('loader').style.display = "none";
-                    document.getElementById('post-data').style.display = "block";
-                } else {
-                    document.getElementById('loader').innerText = "माफ गर्नुहोस्, यो सामग्री भेटिएन।";
+                // २. यदि त्यहाँ भेटिएन भने 'posts/cat/sub' मा खोज्ने (पुरानो ड्यासबोर्डको लागि)
+                if (!data) {
+                    return database.ref('posts/' + category + '/' + postId).once('value');
                 }
-            }).catch((error) => {
-                console.error("Error fetching data:", error);
-                document.getElementById('loader').innerText = "डाटा लोड गर्न समस्या भयो।";
+                return snapshot;
+            }).then((snapshot) => {
+                const post = snapshot.val();
+                if (post) {
+                    renderContent(post);
+                } else {
+                    document.getElementById('loader').innerText = "डाटा फेला परेन।";
+                }
+            }).catch(() => {
+                document.getElementById('loader').innerText = "लोड गर्दा समस्या भयो।";
             });
+
         } else {
-            document.getElementById('loader').innerText = "कुनै पनि पोस्ट आईडी फेला परेन।";
+            document.getElementById('loader').innerText = "ID उपलब्ध छैन।";
+        }
+
+        function renderContent(data) {
+            // यदि डाटा भित्र थप नेस्टेड की (key) छ भने पहिलो की लिने
+            let post = (data.title || data.content || data.description) ? data : data[Object.keys(data)[0]];
+
+            document.getElementById('display-title').innerText = post.title || "शीर्षक";
+            document.getElementById('header-title').innerText = (post.title || "विवरण").substring(0, 20) + "...";
+            document.getElementById('display-body').innerText = post.content || post.description || post.desc || post.body || "";
+            
+            // इमेज सेटअप
+            const imgUrl = post.image || post.thumbnail || post.img;
+            if (imgUrl) {
+                document.getElementById('main-img').src = imgUrl;
+                document.getElementById('image-container').style.display = "block";
+            }
+
+            // मिति र क्याटेगोरी
+            if (post.time || post.deadline || post.timestamp) {
+                const dateText = post.time || post.deadline || new Date(post.timestamp).toLocaleDateString();
+                document.getElementById('display-date').innerText = "📅 " + dateText;
+            }
+            document.getElementById('display-category').innerText = "📁 " + (post.category || category);
+
+            // UI देखाउने
+            document.getElementById('loader').style.display = "none";
+            document.getElementById('post-data').style.display = "block";
         }
     </script>
 </body>
