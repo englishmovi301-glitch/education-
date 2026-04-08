@@ -67,7 +67,7 @@
 
     <header>
         <a href="index.html" class="back-btn">❮</a>
-        <h2 id="page-title">नोट्स सामग्रीहरू</h2>
+        <h2 id="page-title">लोड हुँदैछ...</h2>
     </header>
 
     <div class="content-container">
@@ -90,46 +90,62 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // २. Firebase बाट नोट्स लोड गर्ने फङ्सन
+        // २. URL बाट क्याटेगोरी (cat) र उप-क्याटेगोरी (sub) तान्ने
+        const urlParams = new URLSearchParams(window.location.search);
+        const cat = urlParams.get('cat');
+        const sub = urlParams.get('sub');
+
         function loadPostsFromFirebase() {
             const listElement = document.getElementById('posts-list');
             const loader = document.getElementById('loader');
-            
-            // 'notes' भन्ने फोल्डरबाट डाटा तान्ने
-            database.ref('notes').on('value', (snapshot) => {
-                listElement.innerHTML = ""; // पुरानो डाटा हटाउने
-                loader.style.display = "none"; // लोडर लुकाउने
+            const titleElement = document.getElementById('page-title');
+
+            if (!cat || !sub) {
+                loader.innerText = "Error: URL मा जानकारी अधुरो छ।";
+                return;
+            }
+
+            titleElement.innerText = sub; // 'खरिदार' वा 'नेपाली सेना' शीर्षक राख्ने
+
+            // डेटाबेस पाथ मिलाउने (तपाईँको डेटा संरचना अनुसार)
+            const dbPath = `posts/${cat}/${sub}`;
+
+            database.ref(dbPath).on('value', (snapshot) => {
+                listElement.innerHTML = "";
+                loader.style.display = "none";
                 
                 if (snapshot.exists()) {
                     snapshot.forEach((childSnapshot) => {
                         const post = childSnapshot.val();
                         const postId = childSnapshot.key;
                         
+                        // इमेज देखाउन 'thumbnail' वा 'image' दुवै चेक गर्ने
+                        const displayImage = post.thumbnail || post.image || 'https://via.placeholder.com/300x170?text=No+Image';
+
                         const card = document.createElement('a');
-                        // पोस्टको विवरण देखाउन post-detail.html मा पठाउने (type=notes थपिएको छ)
-                        card.href = `post-detail.html?id=${postId}&type=notes`;
+                        // पोस्टको आईडी र पाथ सहित पठाउने
+                        card.href = `post-detail.html?id=${postId}&cat=${cat}&sub=${encodeURIComponent(sub)}`;
                         card.className = 'post-card';
                         card.innerHTML = `
                             <div class="post-thumbnail">
-                                <img src="${post.image}" alt="Thumb" onerror="this.src='https://via.placeholder.com/300x170?text=No+Image'">
+                                <img src="${displayImage}" alt="Thumb" onerror="this.src='https://via.placeholder.com/300x170?text=No+Image'">
                             </div>
                             <div class="post-info">
-                                <h3>${post.title}</h3>
+                                <h3>${post.title || "बिना शीर्षक"}</h3>
                             </div>
                         `;
                         listElement.appendChild(card);
                     });
                 } else {
-                    loader.innerText = "अहिलेसम्म कुनै सामग्री राखिएको छैन।";
+                    loader.innerText = "यस क्याटेगोरीमा अहिलेसम्म कुनै सामग्री राखिएको छैन।";
                     loader.style.display = "block";
                 }
             }, (error) => {
                 console.error(error);
-                loader.innerText = "डाटा लोड गर्न सकिएन।";
+                loader.innerText = "डाटा लोड गर्न अनुमति छैन (Permission Denied)। Rules चेक गर्नुहोस्।";
             });
         }
 
-        // पेज लोड हुँदा फङ्सन चलाउने
         window.onload = loadPostsFromFirebase;
     </script>
 </body>
