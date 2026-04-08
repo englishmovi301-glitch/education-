@@ -18,7 +18,15 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: var(--white); height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        body { 
+            background: var(--bg); 
+            color: var(--white); 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px; 
+        }
 
         .login-card {
             background: var(--card-bg);
@@ -46,6 +54,8 @@
             cursor: pointer;
             transition: 0.3s;
         }
+
+        .google-btn:hover { background: #f1f1f1; }
 
         #loader { display: none; margin-top: 20px; }
         .spinner {
@@ -78,7 +88,7 @@
     </div>
 
     <script>
-        // तपाईँको Firebase Configuration
+        // १. Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA9_D2PC78t5LTpST4Sx23_74OtTyxoEE4",
             authDomain: "education-58e7b.firebaseapp.com",
@@ -91,6 +101,7 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
 
+        // २. लगइन सुरु गर्ने फङ्सन (Redirect Method)
         function startLogin() {
             const btn = document.getElementById('loginBtn');
             const loader = document.getElementById('loader');
@@ -99,25 +110,36 @@
             loader.style.display = 'block';
 
             const provider = new firebase.auth.GoogleAuthProvider();
-
-            // गुगल लगइन पप-अप खोल्ने
-            firebase.auth().signInWithPopup(provider)
-                .then((result) => {
-                    const user = result.user;
-                    
-                    // युजरको जानकारी ब्राउजरमा सेभ गर्ने ताकि प्रोफाइल पेजमा देखाउन सकियोस्
-                    localStorage.setItem("userName", user.displayName);
-                    localStorage.setItem("userPhoto", user.photoURL);
-                    localStorage.setItem("userEmail", user.email);
-
-                    window.location.href = "index.html"; // होम पेजमा लैजाने
-                })
-                .catch((error) => {
-                    alert("लगइनमा समस्या आयो: " + error.message);
-                    btn.style.display = 'flex';
-                    loader.style.display = 'none';
-                });
+            // मोबाइलको लागि Redirect सबैभन्दा राम्रो हुन्छ
+            firebase.auth().signInWithRedirect(provider);
         }
+
+        // ३. लगइन भएर फिर्ता आएपछि डाटा सेभ गर्ने
+        firebase.auth().getRedirectResult().then((result) => {
+            if (result.user) {
+                const user = result.user;
+                
+                // ब्राउजरमा युजरको डाटा सेभ गर्ने (यसले Gmail ID पनि सेभ गर्छ)
+                localStorage.setItem("userName", user.displayName);
+                localStorage.setItem("userPhoto", user.photoURL);
+                localStorage.setItem("userEmail", user.email);
+
+                // सिधै होम पेजमा लैजाने
+                window.location.href = "index.html";
+            }
+        }).catch((error) => {
+            console.error("लगइन त्रुटि:", error);
+            alert("लगइन हुन सकेन। कृपया फेरि प्रयास गर्नुहोस्।");
+            document.getElementById('loginBtn').style.display = 'flex';
+            document.getElementById('loader').style.display = 'none';
+        });
+
+        // ४. यदि युजर पहिले नै लगइन छ भने सिधै होम पेज पठाउने
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                window.location.href = "index.html";
+            }
+        });
     </script>
 </body>
 </html>
