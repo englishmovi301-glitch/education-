@@ -14,8 +14,11 @@
             --accent: #3498db;
             --bg-light: #f4f7f6;
             --sidebar-bg: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            /* तपाईँको स्क्रिनसट अनुसारका रङ्गहरू */
             --grad1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --grad2: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+            --grad3: linear-gradient(135deg, #b06ab3 0%, #4568dc 100%);
+            --grad4: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
             --quiz-grad: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
 
@@ -52,30 +55,36 @@
         .toggle-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; }
         #dashboard-title { margin-left: 15px; color: var(--primary); font-size: 18px; font-weight: 600; }
 
-        /* Grid Layout */
+        /* Grid Layout - (Single Column Model) */
         .content-padding { padding: 20px; }
         .grid-container {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
-            max-width: 700px; margin: 0 auto;
+            display: grid; 
+            grid-template-columns: 1fr; /* एउटा लाइनमा एउटा मात्र बक्स */
+            gap: 15px;
+            max-width: 600px; 
+            margin: 0 auto;
         }
 
         .box {
-            height: 100px; border-radius: 12px; text-align: center;
-            text-decoration: none; color: white; font-weight: 600; font-size: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: 0.3s;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px;
+            height: 110px; /* अलिकति ठुलो साइज */
+            border-radius: 15px; text-align: center;
+            text-decoration: none; color: white; font-weight: 600; font-size: 18px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15); transition: 0.3s;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px;
         }
-        .box:active { transform: scale(0.95); }
+        .box:active { transform: scale(0.96); }
+        
+        /* स्क्रिनसट जस्तै फरक-फरक रङ्गहरू */
         .box:nth-child(4n+1) { background: var(--grad1); }
         .box:nth-child(4n+2) { background: var(--grad2); }
-        .box:nth-child(4n+3) { background: var(--grad1); filter: hue-rotate(45deg); }
-        .box:nth-child(4n+4) { background: var(--grad2); filter: hue-rotate(-45deg); }
+        .box:nth-child(4n+3) { background: var(--grad3); }
+        .box:nth-child(4n+4) { background: var(--grad4); }
 
         .quiz-box {
-            grid-column: span 2; background: var(--quiz-grad) !important;
-            height: 80px; font-size: 18px; margin-top: 5px;
+            background: var(--quiz-grad) !important;
+            height: 80px; font-size: 18px; margin-top: 10px;
         }
-        .box-icon { font-size: 24px; margin-bottom: 5px; }
+        .box-icon { font-size: 32px; margin-bottom: 8px; }
 
         /* Bottom Nav */
         .bottom-nav {
@@ -88,8 +97,6 @@
         .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
 
         @media (max-width: 600px) {
-            .grid-container { grid-template-columns: 1fr; }
-            .quiz-box { grid-column: span 1; }
             .sidebar { position: fixed; height: 100%; left: 0; }
             .sidebar.hide { left: -260px; margin-left: 0; }
         }
@@ -126,7 +133,6 @@
     </div>
 
     <script>
-        // १. Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA9_D2PC78t5LTpST4Sx23_74OtTyxoEE4",
             authDomain: "education-58e7b.firebaseapp.com",
@@ -139,60 +145,38 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // २. Backup Local Data (यदि Firebase कनेक्ट भएन भने यो चल्छ)
         const categoriesData = {
-            loksewa: { 
-                title: "लोकसेवा आयोग", quiz: "लोकसेवा विशेष Quiz",
-                items: [
-                    { name: "खरिदार", icon: "✍️" }, { name: "नायब सुब्बा", icon: "📜" },
-                    { name: "शाखा अधिकृत", icon: "💼" }, { name: "वन रक्षक", icon: "🛡️" }
-                ]
-            },
-            teacher: { 
-                title: "शिक्षक सेवा आयोग", quiz: "TSC विशेष Quiz",
-                items: [
-                    { name: "प्राथमिक तह", icon: "📝" }, { name: "निम्न माध्यमिक", icon: "📖" },
-                    { name: "माध्यमिक तह", icon: "🏫" }
-                ]
-            },
-            banking: { 
-                title: "बैंकिङ तयारी", quiz: "बैंकिङ विशेष Quiz",
-                items: [
-                    { name: "नेपाल बैंक", icon: "💰" }, { name: "RBB बैंक", icon: "🏛️" },
-                    { name: "ADBL बैंक", icon: "🚜" }
-                ]
-            },
-            security: { 
-                title: "सुरक्षा निकाय", quiz: "सुरक्षा विशेष Quiz",
-                items: [
-                    { name: "नेपाली सेना", icon: "🎖️" }, { name: "नेपाल प्रहरी", icon: "👮" },
-                    { name: "सशस्त्र प्रहरी", icon: "🛡️" }
-                ]
-            }
+            loksewa: { title: "लोकसेवा आयोग", quiz: "लोकसेवा विशेष Quiz", items: [{ name: "खरिदार", icon: "✍️" }, { name: "नायब सुब्बा", icon: "📜" }, { name: "शाखा अधिकृत", icon: "💼" }, { name: "वन रक्षक", icon: "🛡️" }] },
+            teacher: { title: "शिक्षक सेवा आयोग", quiz: "TSC विशेष Quiz", items: [{ name: "प्राथमिक तह", icon: "📝" }, { name: "निम्न माध्यमिक", icon: "📖" }, { name: "माध्यमिक तह", icon: "🏫" }] },
+            banking: { title: "बैंकिङ तयारी", quiz: "बैंकिङ विशेष Quiz", items: [{ name: "नेपाल बैंक", icon: "💰" }, { name: "RBB बैंक", icon: "🏛️" }, { name: "ADBL बैंक", icon: "🚜" }] },
+            security: { title: "सुरक्षा निकाय", quiz: "सुरक्षा विशेष Quiz", items: [{ name: "नेपाली सेना", icon: "🎖️" }, { name: "नेपाल प्रहरी", icon: "👮" }, { name: "सशस्त्र प्रहरी", icon: "🛡️" }] }
         };
 
-        // ३. मुख्य लोड फङ्सन
         function loadCategory(key, el) {
             if(el) {
                 document.querySelectorAll('.menu-list li').forEach(li => li.classList.remove('active'));
                 el.classList.add('active');
             }
 
-            // पहिले लोकल डाटाबाट तुरुन्तै देखाउने
             renderUI(categoriesData[key], key);
 
-            // त्यसपछि Firebase बाट नयाँ डाटा छ कि भनेर चेक गर्ने
-            database.ref('categories/' + key).on('value', (snapshot) => {
+            database.ref('posts/' + key).on('value', (snapshot) => {
                 const fbData = snapshot.val();
+                let combinedItems = [...categoriesData[key].items]; 
+
                 if (fbData) {
-                    renderUI(fbData, key); // यदि Firebase मा डाटा छ भने त्यसले अपडेट गर्ने
+                    Object.keys(fbData).forEach(name => {
+                        if (!combinedItems.find(i => i.name === name)) {
+                            combinedItems.push({ name: name, icon: "📁" });
+                        }
+                    });
                 }
+                renderUI({ title: categoriesData[key].title, quiz: categoriesData[key].quiz, items: combinedItems }, key);
             });
 
             if(window.innerWidth < 600) toggleSidebar();
         }
 
-        // ४. UI मा बक्सहरू बनाउने फङ्सन
         function renderUI(data, key) {
             const grid = document.getElementById('grid-content');
             document.getElementById('dashboard-title').innerText = data.title;
@@ -201,7 +185,7 @@
             if(data.items) {
                 data.items.forEach((item) => {
                     grid.innerHTML += `
-                        <a href="reading.html?cat=${key}&item=${item.name}" class="box">
+                        <a href="reading.html?cat=${key}&sub=${encodeURIComponent(item.name)}" class="box">
                             <span class="box-icon">${item.icon}</span>
                             <span>${item.name}</span>
                         </a>`;
@@ -217,14 +201,6 @@
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('hide');
         }
-
-        // बाहिर क्लिक गर्दा साइडबार बन्द गर्ने
-        document.getElementById('main-content').onclick = function() {
-            const sidebar = document.getElementById('sidebar');
-            if (!sidebar.classList.contains('hide') && window.innerWidth < 600) {
-                sidebar.classList.add('hide');
-            }
-        };
 
         window.onload = () => { loadCategory('loksewa'); };
     </script>
