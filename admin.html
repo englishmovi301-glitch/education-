@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Paisa | Super Admin</title>
+    <title>Daily Paisa | सुपर एडमिन</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -97,78 +97,79 @@
         <div class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
 
         <div id="dash" class="section active">
-            <h1>Overview</h1>
+            <h1>सामान्य अवलोकन (Overview)</h1>
             <div class="stats-container">
-                <div class="card stat-card"><h3>Total Users</h3><p id="uCount">0</p></div>
-                <div class="card stat-card"><h3>Live Users</h3><p id="liveCount" style="color:var(--success)">0</p></div>
-                <div class="card stat-card"><h3>Total User Balance</h3><p id="totalCash" style="color:var(--primary)">Rs. 0</p></div>
+                <div class="card stat-card"><h3>कुल प्रयोगकर्ता</h3><p id="uCount">0</p></div>
+                <div class="card stat-card"><h3>अहिले अनलाइन</h3><p id="liveCount" style="color:var(--success)">0</p></div>
+                <div class="card stat-card"><h3>कुल प्रयोगकर्ता ब्यालेन्स</h3><p id="totalCash" style="color:var(--primary)">Rs. 0</p></div>
             </div>
         </div>
 
         <div id="wallet" class="section">
-            <h1>Payment Requests</h1>
+            <h1>पेमेन्ट अनुरोधहरू</h1>
             <div class="card" style="overflow-x:auto;">
                 <table>
-                    <thead><tr><th>User UID</th><th>Type</th><th>Amount</th><th>Proof</th><th>Action</th></tr></thead>
+                    <thead><tr><th>प्रयोगकर्ता UID</th><th>प्रकार</th><th>रकम</th><th>प्रमाण</th><th>कार्य</th></tr></thead>
                     <tbody id="reqTable"></tbody>
                 </table>
             </div>
         </div>
 
         <div id="content" class="section">
-            <h1>Upload Notes/Content</h1>
+            <h1>नोट्स वा सामग्री अपलोड</h1>
             <div class="card">
-                <label>मेन क्याटेगोरी</label>
+                <label>मुख्य क्याटेगोरी</label>
                 <select id="mainCat" onchange="updateSubOptions()"></select>
                 <label>उप-क्याटेगोरी</label>
                 <select id="subCat"></select>
-                <label>शिर्षक</label>
-                <input type="text" id="cTitle">
+                <label>शिर्षक (Title)</label>
+                <input type="text" id="cTitle" placeholder="सामग्रीको शिर्षक लेख्नुहोस्">
                 <label>फोटो छान्नुहोस्</label>
                 <input type="file" id="cFile" accept="image/*" onchange="previewImage(this, 'preview-box')">
                 <img id="preview-box">
-                <label>विवरण (Content)</label>
-                <textarea id="cBody" rows="8"></textarea>
-                <button class="btn" onclick="saveContent('category')">Public गर्नुहोस्</button>
+                <label>विवरण (Content Body)</label>
+                <textarea id="cBody" rows="8" placeholder="सम्पूर्ण विवरण यहाँ लेख्नुहोस्..."></textarea>
+                <button class="btn" onclick="saveContent('category')">Public गर्नुहोस् (र नोटिफिकेसन पठाउनुहोस्)</button>
             </div>
         </div>
 
         <div id="news-sec" class="section">
-            <h1>Upload News / Vacancy</h1>
+            <h1>समाचार वा भ्याकेन्सी अपलोड</h1>
             <div class="card">
                 <label>प्रकार छान्नुहोस्</label>
                 <select id="newsType">
                     <option value="news">ताजा समाचार (News)</option>
-                    <option value="vacancy">भ्याकेन्सी (Vacancy)</option>
+                    <option value="vacancy">नयाँ भ्याकेन्सी (Vacancy)</option>
                 </select>
                 <label>शिर्षक</label>
-                <input type="text" id="nTitle">
+                <input type="text" id="nTitle" placeholder="शिर्षक लेख्नुहोस्">
                 <label>फोटो</label>
                 <input type="file" id="nFile" accept="image/*" onchange="previewImage(this, 'preview-box-news')">
                 <img id="preview-box-news">
                 <label>विवरण वा म्याद (Deadline/Details)</label>
-                <textarea id="nBody" rows="5"></textarea>
+                <textarea id="nBody" rows="5" placeholder="पूर्ण विवरण वा म्याद लेख्नुहोस्..."></textarea>
                 <button class="btn" style="background:#e67e22;" onclick="saveContent('news')">News/Vacancy राख्नुहोस्</button>
             </div>
         </div>
 
         <div id="manage" class="section">
-            <h1>Manage & Delete Content</h1>
+            <h1>सामाग्री व्यवस्थापन तथा हटाउने (Delete)</h1>
             <div class="card">
                 <label>कुन सेक्सनको हटाउने?</label>
                 <select id="delType" onchange="loadDeleteList()">
                     <option value="">-- छान्नुहोस् --</option>
-                    <option value="news">News</option>
-                    <option value="vacancy">Vacancy</option>
-                    <optgroup label="Categories">
+                    <option value="news">समाचार (News)</option>
+                    <option value="vacancy">भ्याकेन्सी (Vacancy)</option>
+                    <optgroup label="क्याटेगोरीहरू">
                         <option value="loksewa">लोकसेवा आयोग</option>
                         <option value="teacher">शिक्षक सेवा आयोग</option>
                         <option value="banking">बैंकिङ तयारी</option>
+                        <option value="security">सुरक्षा निकाय</option>
                     </optgroup>
                 </select>
                 <div id="deleteListContainer" style="margin-top:20px; max-height: 500px; overflow-y: auto;">
                     <table id="deleteTable">
-                        <thead><tr><th>Title</th><th>Date</th><th>Action</th></tr></thead>
+                        <thead><tr><th>शिर्षक</th><th>प्रकार</th><th>कार्य</th></tr></thead>
                         <tbody id="deleteTbody"></tbody>
                     </table>
                 </div>
@@ -176,12 +177,13 @@
         </div>
 
         <div id="quiz" class="section">
-            <h1>Quiz Manager</h1>
+            <h1>क्विज म्यानेजर</h1>
             <div class="card">
-                <input type="text" id="qTopic" placeholder="क्विज सेटको नाम">
+                <label>क्विज सेटको नाम</label>
+                <input type="text" id="qTopic" placeholder="उदा: लोकसेवा सामान्य ज्ञान सेट १">
                 <div id="quizQuestions"></div>
-                <button class="btn" onclick="addQuestionUI()" style="background:#6c757d;">+ प्रश्न थप्नुहोस्</button>
-                <button class="btn" onclick="saveQuiz()">Quiz Save गर्नुहोस्</button>
+                <button class="btn" onclick="addQuestionUI()" style="background:#6c757d;">+ नयाँ प्रश्न थप्नुहोस्</button>
+                <button class="btn" onclick="saveQuiz()">Quiz Save & Live गर्नुहोस्</button>
             </div>
         </div>
     </div>
@@ -189,7 +191,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.25/jsrsasign-all-min.js"></script>
 
     <script>
-        // १. Firebase Config
+        // १. Firebase Config (यसलाई नचलाउनुहोला)
         const firebaseConfig = {
             apiKey: "4d9530e2aa4cf32a34df7e1e81a25f87",
             authDomain: "education-58e7b.firebaseapp.com",
@@ -201,14 +203,14 @@
         const db = firebase.database();
         const imgbbKey = "3306f682976a47a34846e10eaa74c4f6";
 
-        // २. नोटिफिकेसनको लागि तपाईँको साँचो (JSON Key विवरण)
+        // २. FCM KEY विवरण
         const FCM_KEY = {
             client_email: "firebase-adminsdk-fbsvc@education-58e7b.iam.gserviceaccount.com",
             private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDQtYaHhrFOVFcs\n9mRaRiUxeDu4nKQaHTHCnTkfxJuk/ZPFR9HfrtfqWYbc+vcqLmpuyLghRmqU3WWQ\nzJtJ3XtSLufvxAUm5I67wOMwsYBmuT/W3glA3yJYobwaJw/LS0lgEu59mUdE5/pT\nysCM2ZtBBbkHgNMUn9fGJwAjHwCxpwBAejI7XskQWbW0LT+UpoZEFEEETMhG2cVp\neAaw9nlwW4VNAO8nKW41FdsDwCM4eR1SAVv5KveOYjZgbGUv8DdLPzvYDCBCkESq\nBKxyOxnrN0qxbrk5lW6JXkT8Z9MZfUJ47mm6ELCdcjsnWgKVJHPPT283QHa0ENMw\nbZn+2G2DAgMBAAECggEAXxRTVSpnW+fQTwtwbC/I8O40m8KIm3Y812m8vL92Zp8r\nsYvAByD16h2P0D4O3v8f9q2LmpuyLghRmqU3WWQzJtJ3XtSLufvxAUm5I67wOMws\nYBmuT/W3glA3yJYobwaJw/LS0lgEu59mUdE5/pTysCM2ZtBBbkHgNMUn9fGJwAj\nHwCxpwBAejI7XskQWbW0LT+UpoZEFEEETMhG2cVpeAaw9nlwW4VNAO8nKW41FdsD\nwCM4eR1SAVv5KveOYjZgbGUv8DdLPzvYDCBCkESqBKxyOxnrN0qxbrk5lW6JXkT8\nZ9MZfUJ47mm6ELCdcjsnWgKVJHPPT283QHa0ENMwbZn+2G2DAgMBAAECggEAXxRT\nVSpnW+fQTwtwbC/I8O40m8KIm3Y812m8vL92Zp8rsYvAByD16h2P0D4O3v8f9q2L\nmpuyLghRmqU3WWQzJtJ3XtSLufvxAUm5I67wOMwsYBmuT/W3glA3yJYobwaJw/LS\n0lgEu59mUdE5/pTysCM2ZtBBbkHgNMUn9fGJwAjHwCxpwBAejI7XskQWbW0LT+Up\noZEFEEETMhG2cVpeAaw9nlwW4VNAO8nKW41FdsDwCM4eR1SAVv5KveOYjZgbGUv8\nDdLPzvYDCBCkESqBKxyOxnrN0qxbrk5lW6JXkT8Z9MZfUJ47mm6ELCdcjsnWgKV\nJHPPT283QHa0ENMwbZn+2G2DAgMBAAECggEAXxRTVSpnW+fQTwtwbC/I8O40m8KI\nm3Y812m8vL92Zp8rsYvAByD16h2P0D4O3v8f9q2LmpuyLghRmqU3WWQzJtJ3XtSL\nufvxAUm5I67wOMwsYBmuT/W3glA3yJYobwaJw/LS0lgEu59mUdE5/pTysCM2ZtB\nBbkHgNMUn9fGJwAjHwCxpwBAejI7XskQWbW0LT+UpoZEFEEETMhG2cVpeAaw9nlw\nW4VNAO8nKW41FdsDwCM4eR1SAVv5KveOYjZgbGUv8DdLPzvYDCBCkESqBKxyOxnr\nN0qxbrk5lW6JXkT8Z9MZfUJ47mm6ELCdcjsnWgKVJHPPT283QHa0ENMwbZn+2G2D\nAgMBAAECggEAXxRTVSpnW+fQTwtwbC/I8O40m8KIm3Y812m8vL92Zp8rsYvAByD1\n6h2P0D4O3v8f9q2LmpuyLghRmqU3WWQzJtJ3XtSLufvxAUm5I67wOMwsYBmuT/W3\nglA3yJYobwaJw/LS0lgEu59mUdE5/pTysCM2ZtBBbkHgNMUn9fGJwAjHwCxpwBAe\njI7XskQWbW0LT+UpoZEFEEETMhG2cVpeAaw9nlwW4VNAO8nKW41FdsDwCM4eR1SA\nVv5KveOYjZgbGUv8DdLPzvYDCBCkESqBKxyOxnrN0qxbrk5lW6JXkT8Z9MZfUJ47\nmm6ELCdcjsnWgKVJHPPT283QHa0ENMwbZn+2G2DAgMBAAECggEAXxRTVSpnW+fQT\nwtwbC/I8O40m8KIm3Y812m8vL92Zp8rsYvAByD16h2P0D4O3v8f9q2LmpuyLghRm\nqU3WWQzJtJ3XtSLufvxAUm5I67wOMwsYBmuT/W3glA3yJYobwaJw/LS0lgEu59mU\ndE5/pTysCM2ZtBBbkHgNMUn9fGJwAjHwCxpwBAejI7XskQWbW0LT+UpoZEFEEETM\nhG2cVpeAaw9nlwW4VNAO8nKW41FdsDwCM4eR1SAVv5KveOYjZgbGUv8DdLPzvYDC\nBCkESqBKxyOxnrN0qxbrk5lW6JXkT8Z9MZfUJ47mm6ELCdcjsnWgKVJHPPT283QH\na0ENMwbZn+2G2DAgMBAAECggEAXxRTVSpnW+fQTwtwbC/I\n-----END PRIVATE KEY-----\n",
             project_id: "education-58e7b"
         };
 
-        // ३. FCM V1 टोकन जेनेरेट गर्ने फङ्सन (सुरक्षाका लागि)
+        // ३. FCM V1 टोकन जेनेरेटर
         async function getFCMToken() {
             const header = { alg: "RS256", typ: "JWT" };
             const now = Math.floor(Date.now() / 1000);
@@ -232,7 +234,7 @@
             return data.access_token;
         }
 
-        // ४. नोटिफिकेसन पठाउने मुख्य फङ्सन
+        // ४. नोटिफिकेसन पठाउने फङ्सन
         async function sendFCM(title, body) {
             try {
                 const token = await getFCMToken();
@@ -252,7 +254,6 @@
             } catch (e) { console.error("Notification Error:", e); }
         }
 
-        // Sidebar र Section बदल्ने फङ्सनहरू
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('main-content').classList.toggle('shifted');
@@ -273,10 +274,17 @@
             security: ["नेपाली सेना", "नेपाल प्रहरी", "सशस्त्र प्रहरी"]
         };
 
+        const catNames = {
+            loksewa: "लोकसेवा आयोग",
+            teacher: "शिक्षक सेवा आयोग",
+            banking: "बैंकिङ तयारी",
+            security: "सुरक्षा निकाय"
+        };
+
         function updateSubOptions() {
             const main = document.getElementById('mainCat');
             if(main.innerHTML == "") {
-                main.innerHTML = Object.keys(categories).map(k => `<option value="${k}">${k}</option>`).join('');
+                main.innerHTML = Object.keys(categories).map(k => `<option value="${k}">${catNames[k]}</option>`).join('');
             }
             const sub = document.getElementById('subCat');
             sub.innerHTML = categories[main.value].map(c => `<option value="${c}">${c}</option>`).join('');
@@ -300,7 +308,6 @@
             document.getElementById('totalCash').innerText = "Rs. " + bal.toFixed(2);
         });
 
-        // ५. सामाग्री सेभ गर्दा नोटिफिकेसन जाने गरि मिलाइएको फङ्सन
         async function saveContent(mode) {
             let file, title, body, path, notifTitle;
             if(mode === 'category') {
@@ -320,10 +327,10 @@
                 notifTitle = (type === 'news' ? "ताजा समाचार: " : "नयाँ भ्याकेन्सी: ") + title;
             }
 
-            if(!file || !title || !body) return alert("सबै विवरण भर्नुहोस्!");
+            if(!file || !title || !body) return alert("कृपया सबै विवरण भर्नुहोस्!");
             
             const originalBtnText = event.target.innerText;
-            event.target.innerText = "प्रक्रिया हुँदैछ...";
+            event.target.innerText = "अपलोड हुँदैछ...";
             event.target.disabled = true;
 
             const formData = new FormData();
@@ -334,14 +341,13 @@
                 if(json.success) {
                     await db.ref(path).push({ title, content: body, thumbnail: json.data.url, image: json.data.url, timestamp: Date.now() });
                     
-                    // नोटिफिकेसन पठाउने
                     await sendFCM(notifTitle, body);
 
-                    alert("सफलतापूर्वक अपलोड र नोटिफिकेसन पठाइयो!");
+                    alert("सफलतापूर्वक पब्लिक गरियो र प्रयोगकर्ताहरूलाई जानकारी पठाइयो!");
                     location.reload();
                 }
             } catch (e) { 
-                alert("Error: " + e.message); 
+                alert("समस्या आयो: " + e.message); 
                 event.target.innerText = originalBtnText;
                 event.target.disabled = false;
             }
@@ -350,7 +356,7 @@
         function loadDeleteList() {
             const type = document.getElementById('delType').value;
             const tbody = document.getElementById('deleteTbody');
-            tbody.innerHTML = "<tr><td colspan='3'>लोड हुँदैछ...</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='3'>खोजिँदैछ...</td></tr>";
             if(!type) return;
             if(['loksewa','teacher','banking','security'].includes(type)) {
                 db.ref(`posts/${type}`).once('value', snap => {
@@ -374,14 +380,14 @@
 
         function renderRow(target, title, key, fullPath) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${title.substring(0,30)}...</td><td>Post</td><td><button class="delete-btn" onclick="deletePost('${fullPath}')">Delete</button></td>`;
+            tr.innerHTML = `<td>${title.substring(0,40)}...</td><td>पोस्ट</td><td><button class="delete-btn" onclick="deletePost('${fullPath}')">हटाउनुहोस् (Delete)</button></td>`;
             target.appendChild(tr);
         }
 
         async function deletePost(path) {
-            if(confirm("के तपाईँ हटाउन चाहनुहुन्छ?")) {
+            if(confirm("के तपाईँ यो सामग्री सधैँका लागि हटाउन चाहनुहुन्छ?")) {
                 await db.ref(path).remove();
-                alert("Deleted!");
+                alert("हटाइयो!");
                 loadDeleteList();
             }
         }
@@ -391,14 +397,20 @@
             qCount++;
             const div = document.createElement('div');
             div.className = "card";
-            div.innerHTML = `<b>प्रश्न ${qCount}</b><input type="text" class="q-text" placeholder="प्रश्न"><input type="text" class="q-opt" placeholder="Option 1"><input type="text" class="q-opt" placeholder="Option 2"><input type="text" class="q-opt" placeholder="Option 3"><input type="text" class="q-opt" placeholder="Option 4"><input type="number" class="q-correct" placeholder="सही उत्तर (1-4)">`;
+            div.innerHTML = `<b>प्रश्न नम्बर ${qCount}</b>
+                <input type="text" class="q-text" placeholder="प्रश्न लेख्नुहोस्">
+                <input type="text" class="q-opt" placeholder="विकल्प १">
+                <input type="text" class="q-opt" placeholder="विकल्प २">
+                <input type="text" class="q-opt" placeholder="विकल्प ३">
+                <input type="text" class="q-opt" placeholder="विकल्प ४">
+                <input type="number" class="q-correct" placeholder="सही विकल्प नम्बर (१-४)">`;
             document.getElementById('quizQuestions').appendChild(div);
         }
         addQuestionUI();
 
         async function saveQuiz() {
             const topic = document.getElementById('qTopic').value;
-            if(!topic) return alert("क्विजको नाम लेख्नुहोस्!");
+            if(!topic) return alert("कृपया क्विजको नाम लेख्नुहोस्!");
             const quizData = [];
             document.querySelectorAll('#quizQuestions .card').forEach(qc => {
                 const text = qc.querySelector('.q-text').value;
@@ -408,10 +420,9 @@
             });
             await db.ref('quizzes').push({ topic, questions: quizData, timestamp: Date.now() });
             
-            // क्विजको लागि पनि नोटिफिकेसन
             await sendFCM("नयाँ क्विज उपलब्ध छ!", topic + " सेटमा अहिले नै भाग लिनुहोस्।");
             
-            alert("Quiz Live & Notified!");
+            alert("क्विज सेभ गरियो र प्रयोगकर्ताहरूलाई जानकारी पठाइयो!");
             location.reload();
         }
     </script>
