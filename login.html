@@ -55,8 +55,6 @@
             transition: 0.3s;
         }
 
-        .google-btn:hover { background: #f1f1f1; }
-
         #loader { display: none; margin-top: 20px; }
         .spinner {
             width: 30px; height: 30px;
@@ -88,7 +86,7 @@
     </div>
 
     <script>
-        // १. Firebase Configuration
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyA9_D2PC78t5LTpST4Sx23_74OtTyxoEE4",
             authDomain: "education-58e7b.firebaseapp.com",
@@ -98,46 +96,40 @@
             appId: "1:661874475829:web:dc74079c8c25ef56b0427c"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
 
-        // २. लगइन सुरु गर्ने फङ्सन (Redirect Method)
         function startLogin() {
             const btn = document.getElementById('loginBtn');
             const loader = document.getElementById('loader');
-            
             btn.style.display = 'none';
             loader.style.display = 'block';
 
             const provider = new firebase.auth.GoogleAuthProvider();
-            // मोबाइलको लागि Redirect सबैभन्दा राम्रो हुन्छ
             firebase.auth().signInWithRedirect(provider);
         }
 
-        // ३. लगइन भएर फिर्ता आएपछि डाटा सेभ गर्ने
+        // लगइन भएर फिर्ता आएपछि डाटा सेभ गर्ने र profile.html मा जाने
         firebase.auth().getRedirectResult().then((result) => {
             if (result.user) {
                 const user = result.user;
-                
-                // ब्राउजरमा युजरको डाटा सेभ गर्ने (यसले Gmail ID पनि सेभ गर्छ)
                 localStorage.setItem("userName", user.displayName);
                 localStorage.setItem("userPhoto", user.photoURL);
                 localStorage.setItem("userEmail", user.email);
 
-                // सिधै होम पेजमा लैजाने
-                window.location.href = "index.html";
+                // सिधै profile.html मा लैजाने
+                window.location.href = "profile.html";
             }
         }).catch((error) => {
-            console.error("लगइन त्रुटि:", error);
-            alert("लगइन हुन सकेन। कृपया फेरि प्रयास गर्नुहोस्।");
+            console.error("Error:", error);
+            alert("लगइनमा समस्या: " + error.message);
             document.getElementById('loginBtn').style.display = 'flex';
             document.getElementById('loader').style.display = 'none';
         });
 
-        // ४. यदि युजर पहिले नै लगइन छ भने सिधै होम पेज पठाउने
+        // पहिले नै लगइन छ भने पनि सिधै profile.html पठाउने
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                window.location.href = "index.html";
+                window.location.href = "profile.html";
             }
         });
     </script>
