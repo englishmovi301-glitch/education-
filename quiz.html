@@ -31,7 +31,21 @@
             font-size: 18px;
         }
 
-        /* Start & Result Screen */
+        /* Modal Style - GitHub.io names avoid गर्न */
+        #custom-modal {
+            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); align-items: center; justify-content: center; backdrop-filter: blur(5px);
+        }
+        .modal-box {
+            background: white; padding: 30px; border-radius: 20px; width: 85%; max-width: 380px;
+            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3); animation: popUp 0.3s ease;
+        }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-btn {
+            background: var(--primary); color: white; border: none; padding: 12px 30px;
+            border-radius: 12px; font-weight: 800; cursor: pointer; margin-top: 20px; width: 100%;
+        }
+
         #start-screen, #result-screen {
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px; text-align: center;
         }
@@ -64,29 +78,14 @@
             display: flex; justify-content: space-around; padding: 15px; 
             background: #fff; font-size: 16px; font-weight: 800; border-bottom: 2px solid #eee;
         }
-
-        /* CUSTOM MODAL CSS (to replace alert) */
-        #custom-modal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;
-        }
-        .modal-content {
-            background: white; padding: 30px; border-radius: 20px; width: 85%; max-width: 400px;
-            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease;
-        }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-btn {
-            margin-top: 20px; background: var(--accent); color: white; border: none;
-            padding: 12px 30px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%;
-        }
     </style>
 </head>
 <body>
 
     <div id="custom-modal">
-        <div class="modal-content">
-            <h3 id="modal-msg" style="font-size: 20px; color: var(--primary);">मेसेज</h3>
-            <button class="modal-btn" onclick="closeModal()">OK</button>
+        <div class="modal-box">
+            <h3 id="modal-msg" style="font-size: 20px; color: var(--primary); line-height: 1.5;">सन्देश</h3>
+            <button class="modal-btn" onclick="closeModal()">ठीक छ</button>
         </div>
     </div>
 
@@ -137,12 +136,11 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Helper functions for Custom Modal
-        function myAlert(msg) {
+        // Custom Modal Logic
+        function showAlert(msg) {
             document.getElementById('modal-msg').innerText = msg;
             document.getElementById('custom-modal').style.display = 'flex';
         }
-
         function closeModal() {
             document.getElementById('custom-modal').style.display = 'none';
         }
@@ -179,13 +177,13 @@
 
         async function startQuiz() {
             const user = firebase.auth().currentUser;
-            if(!user) return myAlert("कृपया पहिले लगइन गर्नुहोस्!");
+            if(!user) return showAlert("कृपया पहिले लगइन गर्नुहोस्!");
 
             const userRef = database.ref('users/' + user.uid);
             const snapshot = await userRef.once('value');
             userBalance = snapshot.val() ? snapshot.val().balance : 0;
 
-            if(userBalance < 30) return myAlert("तपाईँको ब्यालेन्स कम्तिमा ३० रुपैयाँ हुनुपर्छ!");
+            if(userBalance < 30) return showAlert("तपाईँको ब्यालेन्स कम्तिमा ३० रुपैयाँ हुनुपर्छ!");
 
             userBalance -= 30;
             await userRef.update({ balance: userBalance });
@@ -268,9 +266,7 @@
             const user = firebase.auth().currentUser;
             if(user) {
                 const userRef = database.ref('users/' + user.uid);
-                const currentData = await userRef.once('value');
-                const latestBalance = currentData.val() ? currentData.val().balance : 0;
-                await userRef.update({ balance: latestBalance + totalEarnings });
+                await userRef.update({ balance: userBalance + totalEarnings });
             }
         }
     </script>
