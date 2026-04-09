@@ -50,7 +50,7 @@
             cursor: pointer; font-weight: 700; transition: 0.2s; text-align: left; font-size: 18px;
             color: #1e293b;
         }
-ए        .option-btn:active { transform: scale(0.97); }
+        .option-btn:active { transform: scale(0.97); }
         .option-btn.correct { background: var(--success) !important; color: white; border-color: var(--success); }
         .option-btn.wrong { background: var(--danger) !important; color: white; border-color: var(--danger); }
 
@@ -64,9 +64,31 @@
             display: flex; justify-content: space-around; padding: 15px; 
             background: #fff; font-size: 16px; font-weight: 800; border-bottom: 2px solid #eee;
         }
+
+        /* CUSTOM MODAL CSS (to replace alert) */
+        #custom-modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 20px; width: 85%; max-width: 400px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popIn 0.3s ease;
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-btn {
+            margin-top: 20px; background: var(--accent); color: white; border: none;
+            padding: 12px 30px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%;
+        }
     </style>
 </head>
 <body>
+
+    <div id="custom-modal">
+        <div class="modal-content">
+            <h3 id="modal-msg" style="font-size: 20px; color: var(--primary);">मेसेज</h3>
+            <button class="modal-btn" onclick="closeModal()">OK</button>
+        </div>
+    </div>
 
     <header>
         <a href="index.html" style="text-decoration:none; color:var(--primary); font-size:30px; font-weight:900;">❮</a>
@@ -115,7 +137,16 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // URL बाट टाइप लिने (loksewa, teacher, आदि)
+        // Helper functions for Custom Modal
+        function myAlert(msg) {
+            document.getElementById('modal-msg').innerText = msg;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').style.display = 'none';
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const quizType = urlParams.get('type') || 'loksewa';
         
@@ -130,14 +161,12 @@
         let timerId;
         let userBalance = 0;
 
-        // Firebase बाट प्रश्नहरू तान्ने
         async function fetchQuestions() {
             const snapshot = await database.ref('quizzes/' + quizType).once('value');
             const data = snapshot.val();
             if (data) {
                 questions = Object.values(data).sort(() => 0.5 - Math.random()).slice(0, 50);
             } else {
-                // यदि डाटा छैन भने डमी प्रश्न राख्ने (परीक्षणको लागि)
                 for(let i=1; i<=50; i++) {
                     questions.push({
                         q: `${quizType} सम्बन्धी नमूना प्रश्न नम्बर ${i}?`,
@@ -149,18 +178,15 @@
         }
 
         async function startQuiz() {
-            // १. पहिले लगइन चेक गर्ने
             const user = firebase.auth().currentUser;
-            if(!user) return alert("कृपया पहिले लगइन गर्नुहोस्!");
+            if(!user) return myAlert("कृपया पहिले लगइन गर्नुहोस्!");
 
-            // २. ब्यालेन्स चेक गर्ने
             const userRef = database.ref('users/' + user.uid);
             const snapshot = await userRef.once('value');
             userBalance = snapshot.val() ? snapshot.val().balance : 0;
 
-            if(userBalance < 30) return alert("तपाईँको ब्यालेन्स कम्तिमा ३० रुपैयाँ हुनुपर्छ!");
+            if(userBalance < 30) return myAlert("तपाईँको ब्यालेन्स कम्तिमा ३० रुपैयाँ हुनुपर्छ!");
 
-            // ३. ३० रुपैयाँ काट्ने र सुरु गर्ने
             userBalance -= 30;
             await userRef.update({ balance: userBalance });
 
@@ -239,11 +265,12 @@
             document.getElementById('final-earn').innerText = "Rs. " + totalEarnings.toFixed(2);
             document.getElementById('summary').innerText = `${questions.length} मध्ये ${correctAnswers} वटा मिलाउनुभयो।`;
 
-            // ब्यालेन्स अपडेट गर्ने
             const user = firebase.auth().currentUser;
             if(user) {
                 const userRef = database.ref('users/' + user.uid);
-                await userRef.update({ balance: userBalance + totalEarnings });
+                const currentData = await userRef.once('value');
+                const latestBalance = currentData.val() ? currentData.val().balance : 0;
+                await userRef.update({ balance: latestBalance + totalEarnings });
             }
         }
     </script>
