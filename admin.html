@@ -78,6 +78,10 @@
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; }
         th { background: #f0f2f5; }
 
+        .action-btn { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; color: white; font-weight: bold; margin-right: 5px; }
+        .btn-approve { background: #2ecc71; }
+        .btn-reject { background: #e74c3c; }
+        .ss-img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #ddd; }
         .delete-btn { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
@@ -86,6 +90,7 @@
     <div class="sidebar" id="sidebar">
         <h2 style="color:var(--success); margin-bottom:30px; text-align:center;">Daily Paisa</h2>
         <div class="nav-link active" onclick="showSec('dash', this)"><i class="fas fa-chart-line"></i> डैशबोर्ड</div>
+        <div class="nav-link" onclick="showSec('users-list-sec', this)"><i class="fas fa-users"></i> प्रयोगकर्ताहरू</div>
         <div class="nav-link" onclick="showSec('wallet', this)"><i class="fas fa-exchange-alt"></i> पेमेन्ट अनुरोध</div>
         <div class="nav-link" onclick="showSec('content', this)"><i class="fas fa-file-upload"></i> सामाग्री अपलोड</div>
         <div class="nav-link" onclick="showSec('news-sec', this)"><i class="fas fa-newspaper"></i> न्युज / भ्याकेन्सी</div>
@@ -105,13 +110,46 @@
             </div>
         </div>
 
+        <div id="users-list-sec" class="section">
+            <h1>प्रयोगकर्ता व्यवस्थापन</h1>
+            <div class="card">
+                <h3>सबै प्रयोगकर्ताहरूको विवरण</h3>
+                <div style="overflow-x:auto; margin-top:15px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>नाम/UID</th>
+                                <th>इमेल</th>
+                                <th>ब्यालेन्स</th>
+                                <th>अवस्था</th>
+                                <th>कार्य</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div id="wallet" class="section">
-            <h1>पेमेन्ट अनुरोधहरू</h1>
-            <div class="card" style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th>प्रयोगकर्ता UID</th><th>प्रकार</th><th>रकम</th><th>प्रमाण</th><th>कार्य</th></tr></thead>
-                    <tbody id="reqTable"></tbody>
-                </table>
+            <h1>पेमेन्ट व्यवस्थापन</h1>
+            <div class="card">
+                <h3>१. जम्मा (Deposit) अनुरोधहरू</h3>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead><tr><th>नाम/UID</th><th>रकम</th><th>प्रमाण</th><th>ट्रान्जेक्सन ID</th><th>कार्य</th></tr></thead>
+                        <tbody id="depositTable"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <h3>२. निकासी (Withdraw) अनुरोधहरू</h3>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead><tr><th>नाम/UID</th><th>रकम</th><th>वालेट/नम्बर</th><th>विधि</th><th>कार्य</th></tr></thead>
+                        <tbody id="withdrawTable"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -119,9 +157,9 @@
             <h1>नोट्स वा सामग्री अपलोड</h1>
             <div class="card">
                 <label>मुख्य क्याटेगोरी</label>
-                <select id="mainCat" onchange="updateSubOptions()"></select>
+                <select class="mainCatSelect" onchange="updateSubOptions(this, 'subCatContent')"></select>
                 <label>उप-क्याटेगोरी</label>
-                <select id="subCat"></select>
+                <select id="subCatContent"></select>
                 <label>शिर्षक (Title)</label>
                 <input type="text" id="cTitle" placeholder="सामग्रीको शिर्षक लेख्नुहोस्">
                 <label>फोटो छान्नुहोस्</label>
@@ -129,7 +167,7 @@
                 <img id="preview-box">
                 <label>विवरण (Content Body)</label>
                 <textarea id="cBody" rows="8" placeholder="सम्पूर्ण विवरण यहाँ लेख्नुहोस्..."></textarea>
-                <button class="btn" onclick="saveContent('category')">Public गर्नुहोस् (र नोटिफिकेसन पठाउनुहोस्)</button>
+                <button class="btn" onclick="saveContent('category')">Public गर्नुहोस्</button>
             </div>
         </div>
 
@@ -146,20 +184,21 @@
                 <label>फोटो</label>
                 <input type="file" id="nFile" accept="image/*" onchange="previewImage(this, 'preview-box-news')">
                 <img id="preview-box-news">
-                <label>विवरण वा म्याद (Deadline/Details)</label>
-                <textarea id="nBody" rows="5" placeholder="पूर्ण विवरण वा म्याद लेख्नुहोस्..."></textarea>
+                <label>विवरण वा म्याद</label>
+                <textarea id="nBody" rows="5" placeholder="पूर्ण विवरण लेख्नुहोस्..."></textarea>
                 <button class="btn" style="background:#e67e22;" onclick="saveContent('news')">News/Vacancy राख्नुहोस्</button>
             </div>
         </div>
 
         <div id="manage" class="section">
-            <h1>सामाग्री व्यवस्थापन तथा हटाउने (Delete)</h1>
+            <h1>सामाग्री व्यवस्थापन (Delete)</h1>
             <div class="card">
                 <label>कुन सेक्सनको हटाउने?</label>
                 <select id="delType" onchange="loadDeleteList()">
                     <option value="">-- छान्नुहोस् --</option>
-                    <option value="news">समाचार (News)</option>
-                    <option value="vacancy">भ्याकेन्सी (Vacancy)</option>
+                    <option value="news">समाचार</option>
+                    <option value="vacancy">भ्याकेन्सी</option>
+                    <option value="quizzes">क्विजहरू (Quizzes)</option>
                     <optgroup label="क्याटेगोरीहरू">
                         <option value="loksewa">लोकसेवा आयोग</option>
                         <option value="teacher">शिक्षक सेवा आयोग</option>
@@ -179,6 +218,11 @@
         <div id="quiz" class="section">
             <h1>क्विज म्यानेजर</h1>
             <div class="card">
+                <label>मुख्य क्याटेगोरी</label>
+                <select class="mainCatSelect" id="qMainCat" onchange="updateSubOptions(this, 'subCatQuiz')"></select>
+                <label>उप-क्याटेगोरी</label>
+                <select id="subCatQuiz"></select>
+                
                 <label>क्विज सेटको नाम</label>
                 <input type="text" id="qTopic" placeholder="उदा: लोकसेवा सामान्य ज्ञान सेट १">
                 <div id="quizQuestions"></div>
@@ -191,7 +235,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.25/jsrsasign-all-min.js"></script>
 
     <script>
-        // १. Firebase Config (यसलाई नचलाउनुहोला)
         const firebaseConfig = {
             apiKey: "4d9530e2aa4cf32a34df7e1e81a25f87",
             authDomain: "education-58e7b.firebaseapp.com",
@@ -203,14 +246,14 @@
         const db = firebase.database();
         const imgbbKey = "3306f682976a47a34846e10eaa74c4f6";
 
-        // २. FCM KEY विवरण
+        // FCM Config
         const FCM_KEY = {
             client_email: "firebase-adminsdk-fbsvc@education-58e7b.iam.gserviceaccount.com",
-            private_key: "-----BEGIN PRIVATE KEY-----\n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\n-----END PRIVATE KEY-----\n",
+            private_key: "-----BEGIN PRIVATE KEY-----\n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\n-----END PRIVATE KEY-----\n",
             project_id: "education-58e7b"
         };
 
-        // ३. FCM V1 टोकन जेनेरेटर
+        // Helper: Get FCM Token
         async function getFCMToken() {
             const header = { alg: "RS256", typ: "JWT" };
             const now = Math.floor(Date.now() / 1000);
@@ -224,17 +267,15 @@
             const sHeader = JSON.stringify(header);
             const sPayload = JSON.stringify(payload);
             const sJWT = KJUR.jws.JWS.sign("RS256", sHeader, sPayload, FCM_KEY.private_key);
-
             const response = await fetch("https://oauth2.googleapis.com/token", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${sJWT}`
             });
             const data = await response.json();
             return data.access_token;
         }
 
-        // ४. नोटिफिकेसन पठाउने फङ्सन
+        // Send Push Notification
         async function sendFCM(title, body) {
             try {
                 const token = await getFCMToken();
@@ -247,11 +288,10 @@
                     }
                 };
                 await fetch(url, {
-                    method: "POST",
-                    headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+                    method: "POST", headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
                     body: JSON.stringify(message)
                 });
-            } catch (e) { console.error("Notification Error:", e); }
+            } catch (e) { console.error(e); }
         }
 
         function toggleSidebar() {
@@ -275,129 +315,198 @@
         };
 
         const catNames = {
-            loksewa: "लोकसेवा आयोग",
-            teacher: "शिक्षक सेवा आयोग",
-            banking: "बैंकिङ तयारी",
-            security: "सुरक्षा निकाय"
+            loksewa: "लोकसेवा आयोग", teacher: "शिक्षक सेवा आयोग",
+            banking: "बैंकिङ तयारी", security: "सुरक्षा निकाय"
         };
 
-        function updateSubOptions() {
-            const main = document.getElementById('mainCat');
-            if(main.innerHTML == "") {
-                main.innerHTML = Object.keys(categories).map(k => `<option value="${k}">${catNames[k]}</option>`).join('');
-            }
-            const sub = document.getElementById('subCat');
-            sub.innerHTML = categories[main.value].map(c => `<option value="${c}">${c}</option>`).join('');
+        function updateSubOptions(el, targetId) {
+            const val = el.value;
+            const sub = document.getElementById(targetId);
+            sub.innerHTML = (categories[val] || []).map(c => `<option value="${c}">${c}</option>`).join('');
         }
-        updateSubOptions();
 
+        function initCategorySelects() {
+            const selects = document.querySelectorAll('.mainCatSelect');
+            const options = Object.keys(categories).map(k => `<option value="${k}">${catNames[k]}</option>`).join('');
+            selects.forEach(s => {
+                s.innerHTML = options;
+                updateSubOptions(s, s.id === 'qMainCat' ? 'subCatQuiz' : 'subCatContent');
+            });
+        }
+        initCategorySelects();
+
+        // 1. Stats & User Monitoring
+        db.ref('users').on('value', snap => {
+            let t = 0, o = 0, b = 0;
+            const tbody = document.getElementById('usersTable');
+            tbody.innerHTML = "";
+            
+            snap.forEach(child => {
+                const u = child.val();
+                const uid = child.key;
+                t++;
+                b += (u.balance || 0);
+                if(u.online) o++;
+
+                // Build User Table
+                tbody.innerHTML += `<tr>
+                    <td><b>${u.name || 'No Name'}</b><br><small style="color:#888">${uid}</small></td>
+                    <td>${u.email || 'N/A'}</td>
+                    <td style="color:var(--primary); font-weight:bold;">Rs. ${(u.balance || 0).toFixed(2)}</td>
+                    <td>${u.online ? '<span style="color:#2ecc71"><i class="fas fa-circle"></i> Online</span>' : '<span style="color:#bdc3c7"><i class="fas fa-circle"></i> Offline</span>'}</td>
+                    <td>
+                        <button class="action-btn btn-approve" onclick="editUserBalance('${uid}', ${u.balance || 0})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn btn-reject" onclick="deleteUser('${uid}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('uCount').innerText = t;
+            document.getElementById('liveCount').innerText = o;
+            document.getElementById('totalCash').innerText = "Rs. " + b.toFixed(2);
+        });
+
+        async function editUserBalance(uid, currentBal) {
+            const newBal = prompt("नयाँ ब्यालेन्स राख्नुहोस्:", currentBal);
+            if (newBal !== null && !isNaN(newBal)) {
+                await db.ref('users/' + uid).update({ balance: parseFloat(newBal) });
+                alert("अपडेट भयो!");
+            }
+        }
+
+        async function deleteUser(uid) {
+            if(confirm("के तपाईँ यो प्रयोगकर्तालाई हटाउन चाहनुहुन्छ?")) {
+                await db.ref('users/' + uid).remove();
+            }
+        }
+
+        // 2. Payments (Deposit/Withdraw)
+        db.ref('depositRequests').on('value', snap => {
+            const tbody = document.getElementById('depositTable');
+            tbody.innerHTML = "";
+            snap.forEach(child => {
+                const r = child.val();
+                if(r.status === "pending") {
+                    tbody.innerHTML += `<tr>
+                        <td>${r.userName || r.uid}</td><td>Rs. ${r.amount}</td>
+                        <td><img src="${r.screenshot}" class="ss-img" onclick="window.open('${r.screenshot}')"></td>
+                        <td>${r.txnId || 'N/A'}</td>
+                        <td><button class="action-btn btn-approve" onclick="handleDeposit('${child.key}', '${r.uid}', ${r.amount}, 'approved')">Approve</button></td>
+                    </tr>`;
+                }
+            });
+        });
+
+        async function handleDeposit(key, uid, amt, status) {
+            if(!confirm("के तपाईँ पक्का हुनुहुन्छ?")) return;
+            db.ref('users/' + uid + '/balance').transaction(c => (c || 0) + amt);
+            await db.ref('depositRequests/' + key).update({ status: status });
+            alert("स्वीकृत गरियो!");
+        }
+
+        db.ref('withdrawRequests').on('value', snap => {
+            const tbody = document.getElementById('withdrawTable');
+            tbody.innerHTML = "";
+            snap.forEach(child => {
+                const r = child.val();
+                if(r.status === "pending") {
+                    tbody.innerHTML += `<tr>
+                        <td>${r.userName || r.uid}</td><td>Rs. ${r.amount}</td>
+                        <td>${r.walletNo}</td><td>${r.method}</td>
+                        <td><button class="action-btn btn-approve" onclick="handleWithdraw('${child.key}', 'approved')">Paid</button></td>
+                    </tr>`;
+                }
+            });
+        });
+
+        async function handleWithdraw(key, status) {
+            if(!confirm("के भुक्तानी गरिसक्नुभयो?")) return;
+            await db.ref('withdrawRequests/' + key).update({ status: status });
+            alert("सम्पन्न भयो!");
+        }
+
+        // 3. Image Preview Logic
         function previewImage(input, boxId) {
             const img = document.getElementById(boxId);
             if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => { img.src = e.target.result; img.style.display = 'block'; }
-                reader.readAsDataURL(input.files[0]);
+                const r = new FileReader();
+                r.onload = e => { img.src = e.target.result; img.style.display = 'block'; }
+                r.readAsDataURL(input.files[0]);
             }
         }
 
-        db.ref('users').on('value', snap => {
-            let total = 0, online = 0, bal = 0;
-            snap.forEach(u => { total++; bal += (u.val().balance || 0); if(u.val().online) online++; });
-            document.getElementById('uCount').innerText = total;
-            document.getElementById('liveCount').innerText = online;
-            document.getElementById('totalCash').innerText = "Rs. " + bal.toFixed(2);
-        });
-
+        // 4. Content & News Upload
         async function saveContent(mode) {
-            let file, title, body, path, notifTitle;
+            let file, title, body, path, notif;
             if(mode === 'category') {
                 file = document.getElementById('cFile').files[0];
                 title = document.getElementById('cTitle').value;
                 body = document.getElementById('cBody').value;
-                const m = document.getElementById('mainCat').value;
-                const s = document.getElementById('subCat').value;
-                path = `posts/${m}/${s}`;
-                notifTitle = "Daily Paisa: " + title;
+                path = `posts/${document.querySelector('#content .mainCatSelect').value}/${document.getElementById('subCatContent').value}`;
+                notif = "Daily Paisa: " + title;
             } else {
                 file = document.getElementById('nFile').files[0];
                 title = document.getElementById('nTitle').value;
                 body = document.getElementById('nBody').value;
                 const type = document.getElementById('newsType').value;
                 path = type === 'news' ? 'news' : 'vacancies';
-                notifTitle = (type === 'news' ? "ताजा समाचार: " : "नयाँ भ्याकेन्सी: ") + title;
+                notif = (type === 'news' ? "ताजा समाचार: " : "नयाँ भ्याकेन्सी: ") + title;
             }
 
-            if(!file || !title || !body) return alert("कृपया सबै विवरण भर्नुहोस्!");
-            
-            const originalBtnText = event.target.innerText;
-            event.target.innerText = "अपलोड हुँदैछ...";
-            event.target.disabled = true;
+            if(!file || !title || !body) return alert("सबै विवरण भर्नुहोस्!");
+            const btn = event.target;
+            btn.innerText = "अपलोड हुँदैछ..."; btn.disabled = true;
 
-            const formData = new FormData();
-            formData.append("image", file);
+            const fd = new FormData(); fd.append("image", file);
             try {
-                const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: "POST", body: formData });
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: "POST", body: fd });
                 const json = await res.json();
                 if(json.success) {
-                    await db.ref(path).push({ title, content: body, thumbnail: json.data.url, image: json.data.url, timestamp: Date.now() });
-                    
-                    await sendFCM(notifTitle, body);
-
-                    alert("सफलतापूर्वक पब्लिक गरियो र प्रयोगकर्ताहरूलाई जानकारी पठाइयो!");
-                    location.reload();
+                    await db.ref(path).push({ title, content: body, image: json.data.url, timestamp: Date.now() });
+                    await sendFCM(notif, body);
+                    alert("सफलतापूर्वक पब्लिक गरियो!"); location.reload();
                 }
-            } catch (e) { 
-                alert("समस्या आयो: " + e.message); 
-                event.target.innerText = originalBtnText;
-                event.target.disabled = false;
-            }
+            } catch (e) { alert("Error: " + e.message); btn.innerText = "Public गर्नुहोस्"; btn.disabled = false; }
         }
 
+        // 5. Manage / Delete Logic
         function loadDeleteList() {
             const type = document.getElementById('delType').value;
             const tbody = document.getElementById('deleteTbody');
             tbody.innerHTML = "<tr><td colspan='3'>खोजिँदैछ...</td></tr>";
             if(!type) return;
-            if(['loksewa','teacher','banking','security'].includes(type)) {
-                db.ref(`posts/${type}`).once('value', snap => {
-                    tbody.innerHTML = "";
-                    snap.forEach(subSnap => {
-                        subSnap.forEach(post => {
-                            renderRow(tbody, post.val().title, post.key, `posts/${type}/${subSnap.key}/${post.key}`);
-                        });
-                    });
+
+            let refPath = type;
+            if(['loksewa','teacher','banking','security'].includes(type)) refPath = `posts/${type}`;
+
+            db.ref(refPath).once('value', snap => {
+                tbody.innerHTML = "";
+                snap.forEach(sub => {
+                    if(sub.hasChildren() && isNaN(sub.key)) {
+                        sub.forEach(post => renderRow(tbody, post.val().title || post.val().topic, post.key, `${refPath}/${sub.key}/${post.key}`));
+                    } else {
+                        renderRow(tbody, sub.val().title || sub.val().topic, sub.key, `${refPath}/${sub.key}`);
+                    }
                 });
-            } else {
-                let realPath = type === 'news' ? 'news' : 'vacancies';
-                db.ref(realPath).once('value', snap => {
-                    tbody.innerHTML = "";
-                    snap.forEach(post => {
-                        renderRow(tbody, post.val().title, post.key, `${realPath}/${post.key}`);
-                    });
-                });
-            }
+            });
         }
 
-        function renderRow(target, title, key, fullPath) {
+        function renderRow(target, title, key, path) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${title.substring(0,40)}...</td><td>पोस्ट</td><td><button class="delete-btn" onclick="deletePost('${fullPath}')">हटाउनुहोस् (Delete)</button></td>`;
+            tr.innerHTML = `<td>${title || 'Untitled'}</td><td>Data</td><td><button class="delete-btn" onclick="deletePost('${path}')">Delete</button></td>`;
             target.appendChild(tr);
         }
 
         async function deletePost(path) {
-            if(confirm("के तपाईँ यो सामग्री सधैँका लागि हटाउन चाहनुहुन्छ?")) {
-                await db.ref(path).remove();
-                alert("हटाइयो!");
-                loadDeleteList();
-            }
+            if(confirm("हटाउने हो?")) { await db.ref(path).remove(); loadDeleteList(); }
         }
 
+        // 6. Quiz Logic
         let qCount = 0;
         function addQuestionUI() {
             qCount++;
             const div = document.createElement('div');
             div.className = "card";
-            div.innerHTML = `<b>प्रश्न नम्बर ${qCount}</b>
+            div.innerHTML = `<b>प्रश्न ${qCount}</b>
                 <input type="text" class="q-text" placeholder="प्रश्न लेख्नुहोस्">
                 <input type="text" class="q-opt" placeholder="विकल्प १">
                 <input type="text" class="q-opt" placeholder="विकल्प २">
@@ -406,11 +515,14 @@
                 <input type="number" class="q-correct" placeholder="सही विकल्प नम्बर (१-४)">`;
             document.getElementById('quizQuestions').appendChild(div);
         }
-        addQuestionUI();
+        addQuestionUI(); // Initial question
 
         async function saveQuiz() {
             const topic = document.getElementById('qTopic').value;
-            if(!topic) return alert("कृपया क्विजको नाम लेख्नुहोस्!");
+            const mainCat = document.getElementById('qMainCat').value;
+            const subCat = document.getElementById('subCatQuiz').value;
+            if(!topic) return alert("क्विज सेटको नाम लेख्नुहोस्!");
+
             const quizData = [];
             document.querySelectorAll('#quizQuestions .card').forEach(qc => {
                 const text = qc.querySelector('.q-text').value;
@@ -418,12 +530,12 @@
                 const ans = qc.querySelector('.q-correct').value;
                 if(text) quizData.push({ question: text, options: opts, answer: parseInt(ans)-1 });
             });
-            await db.ref('quizzes').push({ topic, questions: quizData, timestamp: Date.now() });
-            
-            await sendFCM("नयाँ क्विज उपलब्ध छ!", topic + " सेटमा अहिले नै भाग लिनुहोस्।");
-            
-            alert("क्विज सेभ गरियो र प्रयोगकर्ताहरूलाई जानकारी पठाइयो!");
-            location.reload();
+
+            if(quizData.length === 0) return alert("कम्तिमा एउटा प्रश्न थप्नुहोस्!");
+
+            await db.ref(`quizzes/${mainCat}/${subCat}`).push({ topic, questions: quizData, timestamp: Date.now() });
+            await sendFCM("नयाँ क्विज: " + topic, "अहिले नै भाग लिनुहोस् र पैसा जित्नुहोस्।");
+            alert("क्विज सेभ र लाइभ गरियो!"); location.reload();
         }
     </script>
 </body>
